@@ -87,7 +87,7 @@ if __name__ == "__main__":
             # if (len(created_utc) > 0):
             #     created_utc = str(created_utc[0][0])
             # else:
-                created_utc = ""
+            created_utc = ""
 
             print ("\nFetching comments..")
             while True:
