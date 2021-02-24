@@ -53,10 +53,6 @@ def get_comments(r, created_utc):
     try:
         # If a created_utc is supplied increase it by one so the previous first item is no longer included in the next request
         if created_utc is not None:
-            # Update last comment time in DB so next request can 
-            # cur.execute("UPDATE comment_time SET created_utc = {}". format(created_utc))
-            # conn.commit()
-
             created_utc = int(created_utc) + 1
 
         # Build the URL to request
@@ -75,12 +71,28 @@ def get_comments(r, created_utc):
         if (len(parsed_comment_json["data"]) > 0):
             created_utc = parsed_comment_json["data"][0]["created_utc"]
 
+            # Update last comment time in DB so next request can 
+            cur.execute("UPDATE comment_time SET created_utc = {}". format(created_utc))
+            conn.commit()
+
             for comment in parsed_comment_json["data"]:
 
                 comment_author = comment["author"]
                 comment_body = comment["body"]
                 comment_id = comment["id"]
                 comment_subreddit = comment["subreddit"]
+
+
+                print("comment_author")
+                print(comment_author)
+                print("comment_body")
+                print(comment_body)
+                print("comment_id")
+                print(comment_id)
+                print("comment_subreddit")
+                print(comment_subreddit)
+
+                print()
 
                 if (command in comment_body.lower() and comment_author != reddit_username):
                     print ("\n\nFound a comment!")
@@ -108,19 +120,20 @@ if __name__ == "__main__":
         try:
             r = bot_login.bot_login()
 
-            # DATABASE_URL = config('DATABASE_URL')
-            # conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-            # cur = conn.cursor()
-            # cur.execute("SELECT created_utc from comment_time")
-            # created_utc = cur.fetchall()
+            DATABASE_URL = config('DATABASE_URL')
+            conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+            cur = conn.cursor()
+            cur.execute("SELECT created_utc from comment_time")
+            created_utc = cur.fetchall()
 
-            # print(created_utc)
+            print(created_utc)
 
-            # if (len(created_utc) > 0):
-            #     created_utc = str(created_utc[0][0])
-            # else:
-                # created_utc = None
-            created_utc = None
+            if (len(created_utc) > 0):
+                created_utc = str(created_utc[0][0])
+            else:
+                created_utc = None
+
+            print(created_utc)
 
             print ("\nFetching comments..")
             while True:
