@@ -13,6 +13,8 @@ reddit_username = config("reddit_username")
 command = "botcommandtest_tarekis"
 base_url = "https://beta.pushshift.io/search/reddit/comments/"
 
+environment = config('environment')
+
 def build_url(query_paramters_dict):
     url_builder = [base_url, "?"]
 
@@ -51,14 +53,16 @@ def reply_to_comment(r, comment_id, comment_reply, dictionary_type, comment_subr
 
 def get_comments(r, created_utc):
     try:
-        # If a created_utc is supplied increase it by one so the previous first item is no longer included in the next request
-        if created_utc is not None:
-            created_utc = int(created_utc) + 1
-
         # Build the URL to request
         comment_url = build_url({
             "q": command,
-            "size": 50,
+            "size": 100,
+            "filter": ",".join([
+                "id",
+                "author",
+                "created_utc",
+                "body",
+            ]),
             "min_created_utc": created_utc
         })
 
@@ -69,19 +73,19 @@ def get_comments(r, created_utc):
         if (len(parsed_comment_json["data"]) > 0):
             print(parsed_comment_json)
 
-            created_utc = parsed_comment_json["data"][0]["created_utc"]
-
-            # Update last comment time in DB so next request can 
-            cur.execute("UPDATE comment_time SET created_utc = {}". format(created_utc))
-            conn.commit()
+            # Update last comment time +1 in DB so:
+            # 1. the next request can omit already processed comments by including only >= date + 1
+            # 2. if the bot restarts it can read that value from the DB and start where it left off
+            created_utc = int(parsed_comment_json["data"][0]["created_utc"]) + 1
+            if environment != "development":
+                cur.execute("UPDATE comment_time SET created_utc = {}". format(created_utc))
+                conn.commit()
 
             for comment in parsed_comment_json["data"]:
 
                 comment_author = comment["author"]
                 comment_body = comment["body"]
                 comment_id = comment["id"]
-                comment_subreddit = comment["subreddit"]
-
 
                 print("comment_author")
                 print(comment_author)
@@ -89,8 +93,6 @@ def get_comments(r, created_utc):
                 print(comment_body)
                 print("comment_id")
                 print(comment_id)
-                print("comment_subreddit")
-                print(comment_subreddit)
 
                 print()
 
@@ -120,16 +122,23 @@ if __name__ == "__main__":
         try:
             r = bot_login.bot_login()
 
-            DATABASE_URL = config('DATABASE_URL')
-            conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-            cur = conn.cursor()
-            cur.execute("SELECT created_utc from comment_time")
-            created_utc = cur.fetchall()
+            if environment != "development":
+                # Create DB connection
+                DATABASE_URL = config('DATABASE_URL')
+                conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
-            print(created_utc)
+                # Create Cursor to get last valid comment_time
+                cur = conn.cursor()
+                cur.execute("SELECT created_utc from comment_time")
+                created_utc = cur.fetchall()
 
-            if (len(created_utc) > 0):
-                created_utc = str(created_utc[0][0])
+                print(created_utc)
+
+                # Use last comment time or None if not available
+                if (len(created_utc) > 0):
+                    created_utc = str(created_utc[0][0])
+                else:
+                    created_utc = None
             else:
                 created_utc = None
 
