@@ -46,7 +46,7 @@ def run_bot(r, created_utc):
             # cur.execute("SELECT created_utc from comment_time")
             # conn.commit()
 
-            for command in parsed_comment_json["data"]:
+            for comment in parsed_comment_json["data"]:
 
                 comment_author = comment["author"]
                 comment_body = comment["body"]
