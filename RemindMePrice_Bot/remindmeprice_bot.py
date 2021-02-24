@@ -84,9 +84,9 @@ if __name__ == "__main__":
             # cur.execute("SELECT created_utc from comment_time")
             # created_utc = cur.fetchall()
 
-            if (len(created_utc) > 0):
-                created_utc = str(created_utc[0][0])
-            else:
+            # if (len(created_utc) > 0):
+            #     created_utc = str(created_utc[0][0])
+            # else:
                 created_utc = ""
 
             print ("\nFetching comments..")
