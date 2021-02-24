@@ -3,7 +3,6 @@ from decouple import config
 
 def bot_login():
     print ("Logging in..")
-    print (config("client_id"))
     try:
         r = praw.Reddit(username = config("reddit_username"),
                 password = config("reddit_password"),

@@ -1,1 +1,1 @@
-worker: python Wordbook_Bot/wordbook_bot.py
+worker: python RemindMePrice_Bot/remindmeprice_bot.py
