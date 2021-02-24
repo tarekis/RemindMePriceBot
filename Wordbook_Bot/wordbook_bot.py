@@ -8,6 +8,9 @@ import psycopg2
 import re
 from decouple import config
 
+reddit_username = config("reddit_username")
+command = "!botcommandtest_tarekis"
+
 def json_dump_and_parse(file_name, request):
     with open(file_name, "w+") as f:
         json.dump(request.json(), f, sort_keys = True, ensure_ascii = False, indent = 4)
@@ -57,7 +60,7 @@ def run_bot(r, created_utc, conn):
                 comment_id = comment["id"]
                 comment_subreddit = comment["subreddit"]
 
-                if ("!dict" in comment_body.lower() and comment_author != "Wordbook_Bot"):
+                if (command in comment_body.lower() and comment_author != reddit_username):
                     print ("\n\nFound a comment!")
                     word = re.compile("!dict(.*)$").search(comment_body).group(1)
 
