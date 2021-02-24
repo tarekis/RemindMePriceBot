@@ -66,9 +66,9 @@ def get_comments(r, created_utc):
         # Request and parse the response
         parsed_comment_json = requests.get(comment_url).json()
 
-        print(parsed_comment_json)
-
         if (len(parsed_comment_json["data"]) > 0):
+            print(parsed_comment_json)
+
             created_utc = parsed_comment_json["data"][0]["created_utc"]
 
             # Update last comment time in DB so next request can 
