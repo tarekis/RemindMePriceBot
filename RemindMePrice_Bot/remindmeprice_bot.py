@@ -30,7 +30,7 @@ if __name__ == "__main__":
             print(test)
 
             print ("\nFetching comments..")
-            subreddit = reddit.subreddit("+".join(subreddits))
+            subreddit = r.subreddit("+".join(subreddits))
             for submission in subreddit.stream.comments():
                 print(comment)
 
