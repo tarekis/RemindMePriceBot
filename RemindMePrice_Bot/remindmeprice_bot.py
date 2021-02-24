@@ -10,7 +10,8 @@ import time
 import yfinance as yf
 
 reddit_username = config("reddit_username")
-command = "botcommandtest_tarekis"
+command = "!RMPCommandTarekis"
+command_lower = command.lower()
 base_url = "https://beta.pushshift.io/search/reddit/comments/"
 
 environment = config('environment')
@@ -29,11 +30,11 @@ def build_url(query_paramters_dict):
 
 
 # guess old posts wont be replyable so send a message instead then
-def reply_to_comment(r, comment_id, comment_reply, dictionary_type, comment_subreddit, comment_author, comment_body):
+def reply_to_comment(r, comment_id, comment_reply, comment_author, comment_body):
     try:
+        print ("\nReply details:\nComment: \"{}\"\nUser: u/{}\a". format(comment_body, comment_author))
         comment_to_be_replied_to = r.comment(id=comment_id)
         comment_to_be_replied_to.reply(comment_reply)
-        print ("\nReply details:\nDictionary: {}\nSubreddit: r/{}\nComment: \"{}\"\nUser: u/{}\a". format(dictionary_type, comment_subreddit, comment_body, comment_author))
 
     # Probably low karma so can't comment as frequently
     except Exception as e:
@@ -70,52 +71,73 @@ def get_comments(r, created_utc):
         # Request and parse the response
         parsed_comment_json = requests.get(comment_url).json()
 
+        # Process comments if any were found
         if (len(parsed_comment_json["data"]) > 0):
             print(parsed_comment_json)
 
-            # Update last comment time +1 in DB so:
-            # 1. the next request can omit already processed comments by including only >= date + 1
-            # 2. if the bot restarts it can read that value from the DB and start where it left off
+            # Update last comment time so the next request can omit already processed comments by including only >= date + 1
+            # This is done only when a comment was recieved because otherwise we'd increase the last comment time for no reason every loop
             created_utc = int(parsed_comment_json["data"][0]["created_utc"]) + 1
             if environment != "development":
+                # Update the last comment time in DB so if the bot restarts it can read that value and start where it left off
                 cur.execute("UPDATE comment_time SET created_utc = {}". format(created_utc))
                 conn.commit()
 
-            for comment in parsed_comment_json["data"]:
-
-                comment_author = comment["author"]
-                comment_body = comment["body"]
-                comment_id = comment["id"]
-
-                print("comment_author")
-                print(comment_author)
-                print("comment_body")
-                print(comment_body)
-                print("comment_id")
-                print(comment_id)
-
-                print()
-
-                if (command in comment_body.lower() and comment_author != reddit_username):
-                    print ("\n\nFound a comment!")
-                    # word = re.compile("!dict(.*)$").search(comment_body).group(1)
-
-                    ticker = yf.Ticker("GME")
-
-                    comment_reply = "GME: " + ticker.info
-
-                    # Bottom Section
-                    comment_reply += "\n\n\n\n---\n\n^(Beep boop. I am a bot. If there are any issues, contact my) [^Master ](https://www.reddit.com/message/compose/?to=Tarekis&subject=/u/RemindMePriceBot)"
-
-                    reply_to_comment(r, comment_id, comment_reply, dictionary_type, comment_subreddit, comment_author, comment_body)
-
-                    print ("\nFetching comments..")
+            process_comments(parsed_comment_json["data"])
 
     except Exception as e:
         print (str(e.__class__.__name__) + ": " + str(e))
 
     print(str(created_utc))
     return str(created_utc)
+
+def process_comments(comments):
+    # Loop over all comments found in this batch
+    for comment in comments:
+        # Aggregate all used fields
+        comment_author = comment["author"]
+        comment_body = comment["body"]
+        comment_id = comment["id"]
+
+        print("comment_author")
+        print(comment_author)
+        print("comment_body")
+        print(comment_body)
+        print("comment_id")
+        print(comment_id)
+
+        if (command_lower in comment_body.lower() and comment_author != reddit_username):
+            print ("\n\nFound a comment!")
+            search_results = re.compile(f"{command_lower}\s*([^\s]*)\s*([0-9,.]*)$").search(comment_body.lower())
+            symbol_raw = search_results.group(1)
+            target_raw = search_results.group(2)
+
+            if (symbol_raw and target_raw):
+                symbol = symbol_raw.strip().upper()
+                target = target_raw.strip()
+
+                comment_reply_builder = []
+
+                try:
+                    ticker = yf.Ticker(symbol)
+
+                    comment_reply_builder.append("**Please do not use me yet, I'm not finished yet.**\n\n")
+
+                    currency = ticker.info["currency"]
+                    dayHigh = ticker.info["dayHigh"]
+
+                    comment_reply_builder.append(f"Haven't saved your lookup in the DB yet, I actuall should tell you when {symbol} hits {target} {currency}\n")
+                    comment_reply_builder.append(f"I hope you're not sad about it, here's {symbol}'s day high instead: {dayHigh}.")
+
+                    # Bottom Section
+                    comment_reply_builder.append("\n\n\n\n---\n\n^(Beep boop. I am a bot. If there are any issues, contact my) [^Master ](https://www.reddit.com/message/compose/?to=Tarekis&subject=/u/RemindMePriceBot)")
+                except Exception:
+                    comment_reply_builder.append("Can't find that ticker, did you write that correctly?")
+
+                comment_reply = "".join(comment_reply_builder)
+
+                reply_to_comment(r, comment_id, comment_reply, comment_author, comment_body)
+
 
 if __name__ == "__main__":
     while True:
