@@ -10,7 +10,21 @@ import time
 import yfinance as yf
 
 reddit_username = config("reddit_username")
-command = "!botcommandtest_tarekis"
+command = "botcommandtest_tarekis"
+base_url = "https://beta.pushshift.io/search/reddit/comments/"
+
+def build_url(query_paramters_dict):
+    url_builder = [base_url, "?"]
+
+    for key in query_paramters_dict.keys():
+        value = query_paramters_dict[key]
+        if value is not None:
+            url_builder.append(f"{key}=")
+            url_builder.append(str(value))
+            url_builder.append("&")
+    url_builder.pop()
+    return ''.join(url_builder)
+
 
 # guess old posts wont be replyable so send a message instead then
 def reply_to_comment(r, comment_id, comment_reply, dictionary_type, comment_subreddit, comment_author, comment_body):
@@ -35,16 +49,31 @@ def reply_to_comment(r, comment_id, comment_reply, dictionary_type, comment_subr
             print ("Retrying in", i, "seconds..")
             time.sleep(5)
 
-def run_bot(r, created_utc):
+def get_comments(r, created_utc):
     try:
-        comment_url = "https://api.pushshift.io/reddit/search/comment/?q=" + command + "&sort=desc&size=50&fields=author,body,created_utc,id,subreddit&after=" + created_utc
+        # If a created_utc is supplied increase it by one so the previous first item is no longer included in the next request
+        if created_utc is not None:
+            # Update last comment time in DB so next request can 
+            # cur.execute("UPDATE comment_time SET created_utc = {}". format(created_utc))
+            # conn.commit()
+
+            created_utc = int(created_utc) + 1
+
+        # Build the URL to request
+        comment_url = build_url({
+            "q": command,
+            "size": 50,
+            "min_created_utc": created_utc
+        })
+
+        print(comment_url)
+        # Request and parse the response
+        parsed_comment_json = requests.get(comment_url).json()
+
+        print(parsed_comment_json)
 
         if (len(parsed_comment_json["data"]) > 0):
             created_utc = parsed_comment_json["data"][0]["created_utc"]
-
-            # cur.execute("UPDATE comment_time SET created_utc = {}". format(created_utc))
-            # cur.execute("SELECT created_utc from comment_time")
-            # conn.commit()
 
             for comment in parsed_comment_json["data"]:
 
@@ -71,6 +100,7 @@ def run_bot(r, created_utc):
     except Exception as e:
         print (str(e.__class__.__name__) + ": " + str(e))
 
+    print(str(created_utc))
     return str(created_utc)
 
 if __name__ == "__main__":
@@ -84,15 +114,19 @@ if __name__ == "__main__":
             # cur.execute("SELECT created_utc from comment_time")
             # created_utc = cur.fetchall()
 
+            # print(created_utc)
+
             # if (len(created_utc) > 0):
             #     created_utc = str(created_utc[0][0])
             # else:
-            created_utc = ""
+                # created_utc = None
+            created_utc = None
 
             print ("\nFetching comments..")
             while True:
                 # Fetching all new comments that were created after created_utc time
-                created_utc = run_bot(r, created_utc)
+                created_utc = get_comments(r, created_utc)
+                # TODO CHANGE THIS TO 30
                 time.sleep(10)
 
         except Exception as e:
