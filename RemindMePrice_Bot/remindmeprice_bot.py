@@ -131,7 +131,8 @@ def process_comments(comments):
 
                     # Bottom Section
                     comment_reply_builder.append("\n\n\n\n---\n\n^(Beep boop. I am a bot. If there are any issues, contact my) [^Master ](https://www.reddit.com/message/compose/?to=Tarekis&subject=/u/RemindMePriceBot)")
-                except Exception:
+                except Exception as e:
+                    print(e)
                     comment_reply_builder.append("Can't find that ticker, did you write that correctly?")
 
                 comment_reply = "".join(comment_reply_builder)
