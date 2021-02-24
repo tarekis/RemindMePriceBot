@@ -97,6 +97,6 @@ if __name__ == "__main__":
 
         except Exception as e:
             print (str(e.__class__.__name__) + ": " + str(e))
-            cur.close()
-            conn.close()
+            # cur.close()
+            # conn.close()
             time.sleep(15)
