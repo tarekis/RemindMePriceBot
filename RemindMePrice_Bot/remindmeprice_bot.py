@@ -35,7 +35,7 @@ def reply_to_comment(r, comment_id, comment_reply, dictionary_type, comment_subr
             print ("Retrying in", i, "seconds..")
             time.sleep(5)
 
-def run_bot(r, created_utc, conn):
+def run_bot(r, created_utc):
     try:
         comment_url = "https://api.pushshift.io/reddit/search/comment/?q=" + command + "&sort=desc&size=50&fields=author,body,created_utc,id,subreddit&after=" + created_utc
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
             print ("\nFetching comments..")
             while True:
                 # Fetching all new comments that were created after created_utc time
-                created_utc = run_bot(r, created_utc, conn)
+                created_utc = run_bot(r, created_utc)
                 time.sleep(10)
 
         except Exception as e:
