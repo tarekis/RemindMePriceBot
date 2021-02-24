@@ -126,7 +126,7 @@ def process_comments(comments):
                     currency = ticker.info["currency"]
                     dayHigh = ticker.info["dayHigh"]
 
-                    comment_reply_builder.append(f"Haven't saved your lookup in the DB yet, I actuall should tell you when {symbol} hits {target} {currency}\n")
+                    comment_reply_builder.append(f"Haven't saved your lookup in the DB yet, I actually should tell you when {symbol} hits {target} {currency}\n\n")
                     comment_reply_builder.append(f"I hope you're not sad about it, here's {symbol}'s day high instead: {dayHigh}.")
 
                     # Bottom Section
