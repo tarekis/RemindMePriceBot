@@ -127,7 +127,7 @@ def process_comments(conn, reddit, comments):
 
         if (command_lower in comment_body_lower and comment_author != reddit_username):
             print("\n\nFound a comment!")
-            search_results = re.compile(f"{command_lower}\s+([^\s]*)\s*([0-9,.]*)$").search(comment_body_lower)
+            search_results = re.compile(f"{command_lower}\s+([^\s]*)\s*([0-9,.]*).*$").search(comment_body_lower)
             symbol_raw = search_results.group(1)
             target_raw = search_results.group(2)
 
