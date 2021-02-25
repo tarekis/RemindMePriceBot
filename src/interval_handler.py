@@ -85,7 +85,7 @@ def get_comments(conn, reddit, created_utc):
     try:
         # Build the URL to request
         comment_url = build_url({
-            "q": command,
+            "q": static.COMMAND,
             "size": 250,
             "filter": ",".join([
                 "id",
