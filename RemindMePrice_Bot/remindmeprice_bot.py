@@ -93,8 +93,25 @@ def get_comments(r, created_utc):
 
 def save_task(symbol, target):
     # Just throw the task in the DB
-    cur.execute("INSERT INTO tasks (symbol, target) VALUES (%s, %s)", (symbol, target))
+    create_cur = conn.cursor()
+    create_cur.execute("""
+    WITH cte AS (
+        INSERT INTO tasks(symbol, target)
+        values (%s, %s)
+        ON CONFLICT DO NOTHING
+        RETURNING id
+    )
+    SELECT (SELECT id FROM cte) AS result
+    WHERE EXISTS (SELECT 1 FROM cte)
+    UNION ALL
+    SELECT id
+    FROM tasks
+    WHERE symbol = %s AND target = %s AND NOT EXISTS (SELECT 1 FROM cte);
+    """, (symbol, target, symbol, target))
+    id_of_task = create_cur.fetchone()[0]
     conn.commit()
+
+    print(id_of_task)
 
 
 def process_comments(comments):
