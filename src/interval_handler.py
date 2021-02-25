@@ -1,22 +1,11 @@
-from decouple import config
-import re
+import static
+import comments
 import requests
 import time
 import yfinance as yf
 
-environment = config('environment')
-reddit_username = config("reddit_username")
-# RemindMeBot doesn't like me, so lets use that for now :(
-command = "!RemindMiWhenPrice_TEST"
-command_lower = command.lower()
-base_url = "https://beta.pushshift.io/search/reddit/comments/"
-
-# "Explanation": https://regex101.com/r/A8TwlO/1
-command_regex = f"{command_lower}\s+(?:of\s+)?([^\s]+)\s+(?:(hits|drops|drops to)\s+)?([0-9]+(?:[,.][0-9]+)?)\s+(?:(?:before)\s+([^\s]*))?"
-
-
 def build_url(query_paramters_dict):
-    url_builder = [base_url, "?"]
+    url_builder = [static.API_URL, "?"]
 
     for key in query_paramters_dict.keys():
         value = query_paramters_dict[key]
@@ -31,21 +20,23 @@ def build_url(query_paramters_dict):
 def save_task(conn, symbol, target, direction_is_up, before_condition):
     # Just throw the task in the DB
 
-    values = {
+    values_dict = {
         'symbol': symbol,
         'target': target,
         'direction_is_up': direction_is_up,
     }
+
     if before_condition is not None:
-        values['before_condition'] = before_condition
-    
-    print(values)
+        values_dict['before_condition'] = before_condition
+
+    print(values_dict)
+    keys = values_dict.keys()
 
     create_cur = conn.cursor()
-    create_cur.execute("""
+    create_cur.execute(f"""
     WITH cte AS (
-        INSERT INTO tasks(symbol, target, direction_is_up, before_condition)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO tasks({keys})
+        VALUES ({"%s" * len(keys)})
         ON CONFLICT DO NOTHING
         RETURNING id
     )
@@ -54,7 +45,7 @@ def save_task(conn, symbol, target, direction_is_up, before_condition):
     UNION ALL
     SELECT id
     FROM tasks
-    WHERE symbol = %s AND target = %s AND direction_is_up = %s AND before_condition = %s
+    {"WHERE " + " AND ".join(map(lambda name: f"{name} = %s", keys))}
     AND NOT EXISTS (SELECT 1 FROM cte);
     """, (symbol, target, direction_is_up, before_condition, symbol, target, direction_is_up, before_condition))
     id_of_task = create_cur.fetchone()[0]
@@ -116,7 +107,7 @@ def get_comments(conn, reddit, created_utc):
             # Update last comment time so the next request can omit already processed comments by including only >= date + 1
             # This is done only when a comment was recieved because otherwise we'd increase the last comment time for no reason every loop
             created_utc = int(parsed_comment_json["data"][0]["created_utc"]) + 1
-            if environment != "development":
+            if static.ENVIRONMENT != "development":
                 # Update the last comment time in DB so if the bot restarts it can read that value and start where it left off
                 update_cur = conn.cursor()
                 update_cur.execute("UPDATE comment_time SET created_utc = {}". format(created_utc))
@@ -141,52 +132,52 @@ def process_comments(conn, reddit, comments):
         comment_author = comment["author"]
         comment_body_lower = comment["body"].lower()
 
-        if (command_lower in comment_body_lower and comment_author != reddit_username):
+        if (static.COMMAND_LOWER in comment_body_lower and comment_author != static.REDDIT_USERNAME):
             print("\n\nFound a comment!")
-            search_results = re.compile(command_regex).search(comment_body_lower)
-            symbol_raw = search_results.group(1)
-            direction_raw = search_results.group(2)
-            target_raw = search_results.group(3)
-            before_condition_raw = search_results.group(4)
 
-            print(symbol_raw)
-            print(direction_raw)
-            print(target_raw)
-            print(before_condition_raw)
+            body_details = comments.get_comment_body_details(comment_body_lower)
 
-            if (symbol_raw and target_raw):
-                symbol = symbol_raw.strip().upper()
-                target = target_raw.strip()
+            comment_reply_builder = ["**Please do not use me yet, I'm not finished yet.**\n\n"]
 
-                comment_reply_builder = []
+            if body_details is not None:
+                # Deconstruct details
+                symbol = body_details['symbol']
+                target = body_details['target']
+                direction_is_up = body_details['direction_is_up']
+                before_condition = body_details['before_condition']
+                before_condition_successfull = body_details['before_condition_successfull']
 
-                try:
-                    # Initiate ticker
-                    ticker = yf.Ticker(symbol)
+                if before_condition_successfull:
+                    try:
+                        # Initiate ticker
+                        ticker = yf.Ticker(symbol)
 
-                    comment_reply_builder.append("**Please do not use me yet, I'm not finished yet.**\n\n")
+                        # Access ticker into, this is where an error is thrown if the ticker was not found
+                        currency = ticker.info["currency"]
+                        dayHigh = ticker.info["dayHigh"]
 
-                    # Access ticker into, this is where an error is thrown if the ticker was not found
-                    currency = ticker.info["currency"]
-                    dayHigh = ticker.info["dayHigh"]
+                        comment_reply_builder.append(f"Haven't fully saved your lookup in the DB yet, I actually should tell you when {symbol} hits {target} {currency}\n\n")
+                        comment_reply_builder.append(f"I hope you're not sad about it, here's {symbol}'s day high instead: {dayHigh} {currency}.\n\n")
 
-                    comment_reply_builder.append(f"Haven't fully saved your lookup in the DB yet, I actually should tell you when {symbol} hits {target} {currency}\n\n")
-                    comment_reply_builder.append(f"I hope you're not sad about it, here's {symbol}'s day high instead: {dayHigh} {currency}.\n\n")
+                        id_of_task = save_task(conn, symbol, target, direction_is_up, before_condition)
 
-                    id_of_task = save_task(conn, symbol, target, False, None)
+                        comment_reply_builder.append("Subscribing to this task ID: " + str(id_of_task))
 
-                    comment_reply_builder.append("Subscribing to this task ID: " + str(id_of_task))
+                    except Exception as e:
+                        print('Error in comment processing')
+                        print(e)
+                        comment_reply_builder.append(f"Can't find the symbol {symbol}, did you write that correctly?")
+                else:
+                    comment_reply_builder.append("Your command specified a before time, but the time could not be interpreted.\n\n")
+            else:
+                comment_reply_builder.append("Your command seems to be malformed, please check it's format.\n\n")
 
-                    # Bottom Section
-                    comment_reply_builder.append("\n\n\n\n---\n\n^(Beep boop. I am a bot. If there are any issues, contact my) [^Master ](https://www.reddit.com/message/compose/?to=Tarekis&subject=/u/RemindMePriceBot)")
-                except Exception as e:
-                    print('Error in comment processing')
-                    print(e)
-                    comment_reply_builder.append("Can't find that ticker, did you write that correctly?")
+            # Bottom Section
+            comment_reply_builder.append("\n\n\n\n---\n\n^(Beep boop. I am a bot. If there are any issues, contact my) [^Master ](https://www.reddit.com/message/compose/?to=Tarekis&subject=/u/RemindMePriceBot)")
 
-                comment_reply = "".join(comment_reply_builder)
+            comment_reply = "".join(comment_reply_builder)
 
-                reply_to_comment(reddit, comment_id, comment_reply, comment_author, comment_body_lower)
+            reply_to_comment(reddit, comment_id, comment_reply, comment_author, comment_body_lower)
 
 
 def run(conn, reddit, created_utc):
