@@ -8,6 +8,19 @@ import re
 import requests
 import time
 import yfinance as yf
+from apscheduler.schedulers.blocking import BlockingScheduler
+
+sched = BlockingScheduler()
+
+@sched.scheduled_job('interval', seconds=10)
+def timed_job():
+    print('This job is run every ten seconds')
+
+@sched.scheduled_job('cron', day_of_week='0-6', second=0)
+def scheduled_job():
+    print('This job is run every minute of the day')
+
+sched.start()
 
 reddit_username = config("reddit_username")
 command = "!PriceReminderTarekis"
@@ -57,7 +70,7 @@ def get_comments(r, created_utc):
         # Build the URL to request
         comment_url = build_url({
             "q": command,
-            "size": 100,
+            "size": 250,
             "filter": ",".join([
                 "id",
                 "author",
@@ -154,7 +167,7 @@ def process_comments(comments):
                     dayHigh = ticker.info["dayHigh"]
 
                     comment_reply_builder.append(f"Haven't fully saved your lookup in the DB yet, I actually should tell you when {symbol} hits {target} {currency}\n\n")
-                    comment_reply_builder.append(f"I hope you're not sad about it, here's {symbol}'s day high instead: {dayHigh} {currency}.\n")
+                    comment_reply_builder.append(f"I hope you're not sad about it, here's {symbol}'s day high instead: {dayHigh} {currency}.\n\n")
 
                     id_of_task = save_task(symbol, target)
 
