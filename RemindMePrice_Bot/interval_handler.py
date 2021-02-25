@@ -74,7 +74,7 @@ def reply_to_comment(reddit, comment_id, comment_reply, comment_author, comment_
             time.sleep(5)
 
 
-def get_comments(r, created_utc):
+def get_comments(conn, reddit, created_utc):
     try:
         # Build the URL to request
         comment_url = build_url({
@@ -107,7 +107,7 @@ def get_comments(r, created_utc):
                 conn.commit()
                 update_cur.close()
 
-            process_comments(parsed_comment_json["data"])
+            process_comments(parsed_comment_json["data"], reddit)
 
     except Exception as e:
         print(str(e.__class__.__name__) + ": " + str(e))
@@ -116,7 +116,7 @@ def get_comments(r, created_utc):
     return str(created_utc)
 
 
-def process_comments(comments):
+def process_comments(conn, reddit, comments):
     # Loop over all comments found in this batch
     for comment in comments:
         # Aggregate all used fields
