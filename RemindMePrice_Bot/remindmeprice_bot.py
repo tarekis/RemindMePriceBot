@@ -91,6 +91,9 @@ def get_comments(r, created_utc):
     print(str(created_utc))
     return str(created_utc)
 
+def save_task(symbol, target):
+    print(conn)
+
 def process_comments(comments):
     # Loop over all comments found in this batch
     for comment in comments:
@@ -119,15 +122,19 @@ def process_comments(comments):
                 comment_reply_builder = []
 
                 try:
+                    # Initiate ticker
                     ticker = yf.Ticker(symbol)
 
                     comment_reply_builder.append("**Please do not use me yet, I'm not finished yet.**\n\n")
 
+                    # Access 
                     currency = ticker.info["currency"]
                     dayHigh = ticker.info["dayHigh"]
 
                     comment_reply_builder.append(f"Haven't saved your lookup in the DB yet, I actually should tell you when {symbol} hits {target} {currency}\n\n")
                     comment_reply_builder.append(f"I hope you're not sad about it, here's {symbol}'s day high instead: {dayHigh}.")
+
+                    save_task(symbol, target)
 
                     # Bottom Section
                     comment_reply_builder.append("\n\n\n\n---\n\n^(Beep boop. I am a bot. If there are any issues, contact my) [^Master ](https://www.reddit.com/message/compose/?to=Tarekis&subject=/u/RemindMePriceBot)")
