@@ -1,1 +1,1 @@
-clock: python RemindMePrice_Bot/remindmeprice_bot.py
+clock: python RemindMePrice_Bot/clock.py
