@@ -24,6 +24,7 @@ if static.ENVIRONMENT != "development":
     cur = conn.cursor()
     cur.execute("SELECT created_utc from comment_time")
     created_utc_result = cur.fetchall()
+    cur.close()
 
     # Use last comment time or None if not available
     if (len(created_utc_result) > 0):

@@ -1,29 +1,12 @@
+from datetime import datetime
+import database
 import yfinance as yf
 
 
 def run(conn):
-    select_cur = conn.cursor()
-    select_cur.execute("SELECT * from tasks")
-    results = select_cur.fetchall()
-    select_cur.close()
-
-    print("Printing all results from tasks table")
-    print(results)
-
-    # Sort all targets by symbol
-    grouped_targets = {}
-    for result in results:
-        task_id = result[0]
-        symbol = result[1]
-        target = result[2]
-        symbol_target_tuple = (task_id, target)
-        if symbol not in grouped_targets:
-            grouped_targets[symbol] = [symbol_target_tuple]
-        else:
-            grouped_targets[symbol].append(symbol_target_tuple)
+    grouped_targets = database.get_grouped_targets(conn)
 
     print(grouped_targets)
-
     # Iterate over all unique symbols
     for symbol in grouped_targets.keys():
         try:
@@ -31,16 +14,38 @@ def run(conn):
 
             # Access ticker into, this is where an error is thrown if the ticker was not found
             dayHigh = ticker.info["dayHigh"]
+            dayLow = ticker.info["dayLow"]
 
-            for symbol_target_tuple in grouped_targets[symbol]:
-                task_id = symbol_target_tuple[0]
-                target = symbol_target_tuple[1]
-                print(dayHigh >= target)
-                if dayHigh >= target:
-                    print(f"Task #{task_id} finished because day high was {dayHigh}, which is greater or equals the target {target}")
+            for data_tuple in grouped_targets[symbol]:
+                task_id = data_tuple[0]
+                target = data_tuple[1]
+                direction_is_up = data_tuple[2]
+                before_condition = data_tuple[3]
+
+                now = datetime.now()
+                before_condition_datetime = datetime(before_condition)
+
+                print(now)
+                print(before_condition_datetime)
+
+                if (now > before_condition_datetime):
+                    print('Before condition {before_condition} has expired as it was less than the current time {now}')
+                    database.remove_task(conn, task_id)
+                    return
+
+                    if direction_is_up:
+                        print(dayHigh >= target)
+                        if dayHigh >= target:
+                            database.finish_task(conn, task_id)
+                            print(f"Task #{task_id} finished because day high was {dayHigh}, which is greater than or equals the target {target}")
+                    else:
+                        print(dayHigh <= target)
+                        if dayHigh <= target:
+                            database.finish_task(conn, task_id)
+                            print(f"Task #{task_id} finished because day low was {dayLow}, which is less than or equals the target {target}")
 
             print(f"Symbol: {symbol}, day high: {dayHigh}")
 
         except Exception as e:
-            print('Error when fetching current day high')
+            print('Error when fetching finance data for ' + symbol)
             print(e)

@@ -14,47 +14,6 @@ def build_url(query_paramters_dict):
     url_builder.pop()
     return ''.join(url_builder)
 
-
-def save_task(conn, symbol, target, direction_is_up, before_condition):
-    # Just throw the task in the DB
-
-    values_dict = {
-        'symbol': symbol,
-        'target': target,
-        'direction_is_up': direction_is_up,
-    }
-
-    if before_condition is not None:
-        values_dict['before_condition'] = before_condition
-
-    print(values_dict)
-    keys = values_dict.keys()
-
-    create_cur = conn.cursor()
-    create_cur.execute(f"""
-    WITH cte AS (
-        INSERT INTO tasks({keys})
-        VALUES ({"%s" * len(keys)})
-        ON CONFLICT DO NOTHING
-        RETURNING id
-    )
-    SELECT (SELECT id FROM cte) AS result
-    WHERE EXISTS (SELECT 1 FROM cte)
-    UNION ALL
-    SELECT id
-    FROM tasks
-    {"WHERE " + " AND ".join(map(lambda name: f"{name} = %s", keys))}
-    AND NOT EXISTS (SELECT 1 FROM cte);
-    """, (symbol, target, direction_is_up, before_condition, symbol, target, direction_is_up, before_condition))
-    id_of_task = create_cur.fetchone()[0]
-    conn.commit()
-    create_cur.close()
-
-    print(id_of_task)
-
-    return id_of_task
-
-
 def run(conn, reddit, created_utc):
     try:
         # Build the URL to request
