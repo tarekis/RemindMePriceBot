@@ -10,7 +10,7 @@ import time
 import yfinance as yf
 
 reddit_username = config("reddit_username")
-command = "!RMPCommandTarekis"
+command = "!PriceReminderTarekis"
 command_lower = command.lower()
 base_url = "https://beta.pushshift.io/search/reddit/comments/"
 
