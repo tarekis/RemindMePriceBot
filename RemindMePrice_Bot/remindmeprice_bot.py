@@ -33,7 +33,7 @@ def build_url(query_paramters_dict):
 def reply_to_comment(r, comment_id, comment_reply, comment_author, comment_body):
     try:
         print ("\nReply details:\nComment: \"{}\"\nUser: u/{}\a". format(comment_body, comment_author))
-        comment_to_be_replied_to = r.comment(id=comment_id)
+        comment_to_be_replied_to = reddit.comment(id=comment_id)
         comment_to_be_replied_to.reply(comment_reply)
 
     # Probably low karma so can't comment as frequently
@@ -166,8 +166,6 @@ if __name__ == "__main__":
                 cur.execute("SELECT created_utc from comment_time")
                 created_utc = cur.fetchall()
 
-                print(created_utc)
-
                 # Use last comment time or None if not available
                 if (len(created_utc) > 0):
                     created_utc = str(created_utc[0][0])
@@ -176,9 +174,7 @@ if __name__ == "__main__":
             else:
                 created_utc = None
 
-            print(created_utc)
-
-            print ("\nFetching comments..")
+            print("Started bot cycle with starting utc: " + str(created_utc))
             while True:
                 # Fetching all new comments that were created after created_utc time
                 created_utc = get_comments(reddit, created_utc)
