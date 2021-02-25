@@ -157,7 +157,7 @@ def process_comments(conn, reddit, comments):
                     # Bottom Section
                     comment_reply_builder.append("\n\n\n\n---\n\n^(Beep boop. I am a bot. If there are any issues, contact my) [^Master ](https://www.reddit.com/message/compose/?to=Tarekis&subject=/u/RemindMePriceBot)")
                 except Exception as e:
-                    print('error in comment processing')
+                    print('Error in comment processing')
                     print(e)
                     comment_reply_builder.append("Can't find that ticker, did you write that correctly?")
 
