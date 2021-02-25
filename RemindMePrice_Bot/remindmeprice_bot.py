@@ -158,7 +158,7 @@ def process_comments(comments):
 
                     id_of_task = save_task(symbol, target)
 
-                    comment_reply_builder.append(("Subscribing to this task ID: " + str(id_of_task))
+                    comment_reply_builder.append("Subscribing to this task ID: " + str(id_of_task))
 
                     # Bottom Section
                     comment_reply_builder.append("\n\n\n\n---\n\n^(Beep boop. I am a bot. If there are any issues, contact my) [^Master ](https://www.reddit.com/message/compose/?to=Tarekis&subject=/u/RemindMePriceBot)")
