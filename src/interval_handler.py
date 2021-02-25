@@ -6,9 +6,13 @@ import yfinance as yf
 
 environment = config('environment')
 reddit_username = config("reddit_username")
-command = "!PriceReminderTarekis"
+# RemindMeBot doesn't like me, so lets use that for now :(
+command = "!RemindMiWhenPrice_TEST"
 command_lower = command.lower()
 base_url = "https://beta.pushshift.io/search/reddit/comments/"
+
+# "Explanation": https://regex101.com/r/A8TwlO/1
+command_regex = f"{command_lower}\s+(?:of\s+)?([^\s]+)\s+(?:(hits|drops|drops to)\s+)?([0-9]+(?:[,.][0-9]+)?)\s+(?:(?:before)\s+([^\s]*))?"
 
 
 def build_url(query_paramters_dict):
@@ -24,13 +28,24 @@ def build_url(query_paramters_dict):
     return ''.join(url_builder)
 
 
-def save_task(conn, symbol, target):
+def save_task(conn, symbol, target, direction_is_up, before_condition):
     # Just throw the task in the DB
+
+    values = {
+        'symbol': symbol,
+        'target': target,
+        'direction_is_up': direction_is_up,
+    }
+    if before_condition is not None:
+        values['before_condition'] = before_condition
+    
+    print(values)
+
     create_cur = conn.cursor()
     create_cur.execute("""
     WITH cte AS (
-        INSERT INTO tasks(symbol, target)
-        VALUES (%s, %s)
+        INSERT INTO tasks(symbol, target, direction_is_up, before_condition)
+        VALUES (%s, %s, %s, %s)
         ON CONFLICT DO NOTHING
         RETURNING id
     )
@@ -39,8 +54,9 @@ def save_task(conn, symbol, target):
     UNION ALL
     SELECT id
     FROM tasks
-    WHERE symbol = %s AND target = %s AND NOT EXISTS (SELECT 1 FROM cte);
-    """, (symbol, target, symbol, target))
+    WHERE symbol = %s AND target = %s AND direction_is_up = %s AND before_condition = %s
+    AND NOT EXISTS (SELECT 1 FROM cte);
+    """, (symbol, target, direction_is_up, before_condition, symbol, target, direction_is_up, before_condition))
     id_of_task = create_cur.fetchone()[0]
     conn.commit()
     create_cur.close()
@@ -127,9 +143,16 @@ def process_comments(conn, reddit, comments):
 
         if (command_lower in comment_body_lower and comment_author != reddit_username):
             print("\n\nFound a comment!")
-            search_results = re.compile(f"{command_lower}\s+([^\s]*)\s*([0-9,.]*).*$").search(comment_body_lower)
+            search_results = re.compile(command_regex).search(comment_body_lower)
             symbol_raw = search_results.group(1)
-            target_raw = search_results.group(2)
+            direction_raw = search_results.group(2)
+            target_raw = search_results.group(3)
+            before_condition_raw = search_results.group(4)
+
+            print(symbol_raw)
+            print(direction_raw)
+            print(target_raw)
+            print(before_condition_raw)
 
             if (symbol_raw and target_raw):
                 symbol = symbol_raw.strip().upper()
@@ -150,7 +173,7 @@ def process_comments(conn, reddit, comments):
                     comment_reply_builder.append(f"Haven't fully saved your lookup in the DB yet, I actually should tell you when {symbol} hits {target} {currency}\n\n")
                     comment_reply_builder.append(f"I hope you're not sad about it, here's {symbol}'s day high instead: {dayHigh} {currency}.\n\n")
 
-                    id_of_task = save_task(conn, symbol, target)
+                    id_of_task = save_task(conn, symbol, target, False, None)
 
                     comment_reply_builder.append("Subscribing to this task ID: " + str(id_of_task))
 
