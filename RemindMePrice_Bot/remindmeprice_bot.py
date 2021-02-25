@@ -92,7 +92,10 @@ def get_comments(r, created_utc):
     return str(created_utc)
 
 def save_task(symbol, target):
-    print(conn)
+    # Just throw the task in the DB
+    cur.execute("INSERT INTO tasks (symbol, target) VALUES (%s, %s)", (symbol, target))
+    conn.commit()
+
 
 def process_comments(comments):
     # Loop over all comments found in this batch
@@ -132,7 +135,7 @@ def process_comments(comments):
                     dayHigh = ticker.info["dayHigh"]
 
                     comment_reply_builder.append(f"Haven't saved your lookup in the DB yet, I actually should tell you when {symbol} hits {target} {currency}\n\n")
-                    comment_reply_builder.append(f"I hope you're not sad about it, here's {symbol}'s day high instead: {dayHigh}.")
+                    comment_reply_builder.append(f"I hope you're not sad about it, here's {symbol}'s day high instead: {dayHigh} {currency}.")
 
                     save_task(symbol, target)
 
@@ -151,7 +154,7 @@ def process_comments(comments):
 if __name__ == "__main__":
     while True:
         try:
-            r = bot_login.bot_login()
+            reddit = bot_login.bot_login()
 
             if environment != "development":
                 # Create DB connection
@@ -178,12 +181,13 @@ if __name__ == "__main__":
             print ("\nFetching comments..")
             while True:
                 # Fetching all new comments that were created after created_utc time
-                created_utc = get_comments(r, created_utc)
+                created_utc = get_comments(reddit, created_utc)
                 # TODO CHANGE THIS TO 30
                 time.sleep(10)
 
         except Exception as e:
             print (str(e.__class__.__name__) + ": " + str(e))
-            # cur.close()
-            # conn.close()
+            if environment != "development":
+                cur.close()
+                conn.close()
             time.sleep(15)
