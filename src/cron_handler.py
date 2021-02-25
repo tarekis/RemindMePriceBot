@@ -32,7 +32,6 @@ def run(conn):
             # Access ticker into, this is where an error is thrown if the ticker was not found
             dayHigh = ticker.info["dayHigh"]
 
-            print(type(dayHigh))
             for symbol_target_tuple in grouped_targets[symbol]:
                 task_id = symbol_target_tuple[0]
                 target = symbol_target_tuple[1]

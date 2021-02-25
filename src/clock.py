@@ -1,22 +1,21 @@
-from decouple import config
 from apscheduler.schedulers.blocking import BlockingScheduler
+from decouple import config
 import bot_login
 import cron_handler
 import interval_handler
 import psycopg2
+import static
 
-global environment
 global reddit
 global created_utc
 global conn
 
-environment = config('environment')
 created_utc = None
 
 # Log in to reddit when starting clock
 reddit = bot_login.bot_login()
 
-if environment != "development":
+if static.ENVIRONMENT != "development":
     # Create DB connection
     DATABASE_URL = config('DATABASE_URL')
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
