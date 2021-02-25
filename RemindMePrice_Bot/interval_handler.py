@@ -1,7 +1,4 @@
 from decouple import config
-import json
-import os
-import praw
 import re
 import requests
 import time
@@ -25,6 +22,7 @@ def build_url(query_paramters_dict):
             url_builder.append("&")
     url_builder.pop()
     return ''.join(url_builder)
+
 
 def save_task(conn, symbol, target):
     # Just throw the task in the DB
@@ -51,10 +49,11 @@ def save_task(conn, symbol, target):
 
     return id_of_task
 
+
 # TODO guess old posts wont be replyable so send a message instead then
 def reply_to_comment(reddit, comment_id, comment_reply, comment_author, comment_body):
     try:
-        print ("\nReply details:\nComment: \"{}\"\nUser: u/{}\a". format(comment_body, comment_author))
+        print("\nReply details:\nComment: \"{}\"\nUser: u/{}\a". format(comment_body, comment_author))
         comment_to_be_replied_to = reddit.comment(id=comment_id)
         comment_to_be_replied_to.reply(comment_reply)
 
@@ -69,10 +68,11 @@ def reply_to_comment(reddit, comment_id, comment_reply, comment_author, comment_
             if (not "seconds" or not "second" in str(e).split()):
                 time_remaining *= 60
 
-        print (str(e.__class__.__name__) + ": " + str(e))
+        print(str(e.__class__.__name__) + ": " + str(e))
         for i in range(time_remaining, 0, -5):
-            print ("Retrying in", i, "seconds..")
+            print("Retrying in", i, "seconds..")
             time.sleep(5)
+
 
 def get_comments(r, created_utc):
     try:
@@ -110,7 +110,7 @@ def get_comments(r, created_utc):
             process_comments(parsed_comment_json["data"])
 
     except Exception as e:
-        print (str(e.__class__.__name__) + ": " + str(e))
+        print(str(e.__class__.__name__) + ": " + str(e))
 
     print(str(created_utc))
     return str(created_utc)
@@ -132,7 +132,7 @@ def process_comments(comments):
         print(comment_id)
 
         if (command_lower in comment_body.lower() and comment_author != reddit_username):
-            print ("\n\nFound a comment!")
+            print("\n\nFound a comment!")
             search_results = re.compile(f"{command_lower}\s*([^\s]*)\s*([0-9,.]*)$").search(comment_body.lower())
             symbol_raw = search_results.group(1)
             target_raw = search_results.group(2)
@@ -149,7 +149,7 @@ def process_comments(comments):
 
                     comment_reply_builder.append("**Please do not use me yet, I'm not finished yet.**\n\n")
 
-                    # Access 
+                    # Access ticker into, this is where an error is thrown if the ticker was not found
                     currency = ticker.info["currency"]
                     dayHigh = ticker.info["dayHigh"]
 
@@ -170,6 +170,7 @@ def process_comments(comments):
                 comment_reply = "".join(comment_reply_builder)
 
                 reply_to_comment(reddit, comment_id, comment_reply, comment_author, comment_body)
+
 
 def run(conn, reddit, created_utc):
     return get_comments(conn, reddit, created_utc)
