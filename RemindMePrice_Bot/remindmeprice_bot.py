@@ -30,7 +30,7 @@ def build_url(query_paramters_dict):
 
 
 # guess old posts wont be replyable so send a message instead then
-def reply_to_comment(r, comment_id, comment_reply, comment_author, comment_body):
+def reply_to_comment(reddit, comment_id, comment_reply, comment_author, comment_body):
     try:
         print ("\nReply details:\nComment: \"{}\"\nUser: u/{}\a". format(comment_body, comment_author))
         comment_to_be_replied_to = reddit.comment(id=comment_id)
@@ -148,7 +148,7 @@ def process_comments(comments):
 
                 comment_reply = "".join(comment_reply_builder)
 
-                reply_to_comment(r, comment_id, comment_reply, comment_author, comment_body)
+                reply_to_comment(reddit, comment_id, comment_reply, comment_author, comment_body)
 
 
 if __name__ == "__main__":
