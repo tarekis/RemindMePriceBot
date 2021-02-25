@@ -51,9 +51,9 @@ def save_task(conn, symbol, target):
 
 
 # TODO guess old posts wont be replyable so send a message instead then
-def reply_to_comment(reddit, comment_id, comment_reply, comment_author, comment_body):
+def reply_to_comment(reddit, comment_id, comment_reply, comment_author, comment_body_lower):
     try:
-        print("\nReply details:\nComment: \"{}\"\nUser: u/{}\a". format(comment_body, comment_author))
+        print("\nReply details:\nComment: \"{}\"\nUser: u/{}\a". format(comment_body_lower, comment_author))
         comment_to_be_replied_to = reddit.comment(id=comment_id)
         comment_to_be_replied_to.reply(comment_reply)
 
@@ -110,6 +110,7 @@ def get_comments(conn, reddit, created_utc):
             process_comments(conn, reddit, parsed_comment_json["data"])
 
     except Exception as e:
+        print("Fetching comments failed, pushshift API probably is down")
         print(str(e.__class__.__name__) + ": " + str(e))
 
     print(str(created_utc))
@@ -120,20 +121,13 @@ def process_comments(conn, reddit, comments):
     # Loop over all comments found in this batch
     for comment in comments:
         # Aggregate all used fields
-        comment_author = comment["author"]
-        comment_body = comment["body"]
         comment_id = comment["id"]
+        comment_author = comment["author"]
+        comment_body_lower = comment["body"].lower()
 
-        print("comment_author")
-        print(comment_author)
-        print("comment_body")
-        print(comment_body)
-        print("comment_id")
-        print(comment_id)
-
-        if (command_lower in comment_body.lower() and comment_author != reddit_username):
+        if (command_lower in comment_body_lower and comment_author != reddit_username):
             print("\n\nFound a comment!")
-            search_results = re.compile(f"{command_lower}\s*([^\s]*)\s*([0-9,.]*)$").search(comment_body.lower())
+            search_results = re.compile(f"{command_lower}\s+([^\s]*)\s*([0-9,.]*)$").search(comment_body_lower)
             symbol_raw = search_results.group(1)
             target_raw = search_results.group(2)
 
@@ -169,7 +163,7 @@ def process_comments(conn, reddit, comments):
 
                 comment_reply = "".join(comment_reply_builder)
 
-                reply_to_comment(reddit, comment_id, comment_reply, comment_author, comment_body)
+                reply_to_comment(reddit, comment_id, comment_reply, comment_author, comment_body_lower)
 
 
 def run(conn, reddit, created_utc):
