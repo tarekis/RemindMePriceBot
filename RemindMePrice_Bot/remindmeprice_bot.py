@@ -113,6 +113,8 @@ def save_task(symbol, target):
 
     print(id_of_task)
 
+    return id_of_task
+
 
 def process_comments(comments):
     # Loop over all comments found in this batch
@@ -151,10 +153,12 @@ def process_comments(comments):
                     currency = ticker.info["currency"]
                     dayHigh = ticker.info["dayHigh"]
 
-                    comment_reply_builder.append(f"Haven't saved your lookup in the DB yet, I actually should tell you when {symbol} hits {target} {currency}\n\n")
-                    comment_reply_builder.append(f"I hope you're not sad about it, here's {symbol}'s day high instead: {dayHigh} {currency}.")
+                    comment_reply_builder.append(f"Haven't fully saved your lookup in the DB yet, I actually should tell you when {symbol} hits {target} {currency}\n\n")
+                    comment_reply_builder.append(f"I hope you're not sad about it, here's {symbol}'s day high instead: {dayHigh} {currency}.\n")
 
-                    save_task(symbol, target)
+                    id_of_task = save_task(symbol, target)
+
+                    comment_reply_builder.append(("Subscribing to this task ID: " + str(id_of_task))
 
                     # Bottom Section
                     comment_reply_builder.append("\n\n\n\n---\n\n^(Beep boop. I am a bot. If there are any issues, contact my) [^Master ](https://www.reddit.com/message/compose/?to=Tarekis&subject=/u/RemindMePriceBot)")
