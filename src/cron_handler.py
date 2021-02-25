@@ -32,7 +32,15 @@ def run(conn):
             # Access ticker into, this is where an error is thrown if the ticker was not found
             dayHigh = ticker.info["dayHigh"]
 
-            print(f"Symbol: {symbol}, dayHigh: {dayHigh}")
+            print(type dayHigh)
+            for symbol_target_tuple in grouped_targets[symbol]:
+                task_id = symbol_target_tuple[0]
+                target = symbol_target_tuple[1]
+                print(dayHigh >= target)
+                if dayHigh >= target:
+                    print(f"Task #{task_id} finished because day high was {dayHigh}, which is greater or equals the target {target}")
+
+            print(f"Symbol: {symbol}, day high: {dayHigh}")
 
         except Exception as e:
             print('Error when fetching current day high')
