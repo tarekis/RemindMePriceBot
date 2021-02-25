@@ -7,12 +7,12 @@ import requests
 import time
 import yfinance as yf
 
+environment = config('environment')
 reddit_username = config("reddit_username")
 command = "!PriceReminderTarekis"
 command_lower = command.lower()
 base_url = "https://beta.pushshift.io/search/reddit/comments/"
 
-environment = config('environment')
 
 def build_url(query_paramters_dict):
     url_builder = [base_url, "?"]

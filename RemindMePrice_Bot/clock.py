@@ -4,6 +4,7 @@ import cron_handler
 import interval_handler
 import psycopg2
 
+environment = config('environment')
 # Log in to reddit when starting clock
 reddit = bot_login.bot_login()
 
