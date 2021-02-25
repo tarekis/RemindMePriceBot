@@ -107,7 +107,7 @@ def get_comments(conn, reddit, created_utc):
                 conn.commit()
                 update_cur.close()
 
-            process_comments(parsed_comment_json["data"], reddit)
+            process_comments(conn, reddit, parsed_comment_json["data"])
 
     except Exception as e:
         print(str(e.__class__.__name__) + ": " + str(e))
