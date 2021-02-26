@@ -126,10 +126,10 @@ def process_comments(conn, reddit, comments):
                         currency = ticker.info["currency"]
                         dayHigh = ticker.info["dayHigh"]
 
+                        id_of_task = database.save_task(conn, comment_author, symbol, target, direction_is_up, before_condition)
+
                         comment_reply_builder.append(f"Haven't fully saved your lookup in the DB yet, I actually should tell you when {symbol} hits {target} {currency}\n\n")
                         comment_reply_builder.append(f"I hope you're not sad about it, here's {symbol}'s day high instead: {dayHigh} {currency}.\n\n")
-
-                        id_of_task = database.save_task(conn, comment_author, symbol, target, direction_is_up, before_condition)
 
                         comment_reply_builder.append("Subscribing to this task ID: " + str(id_of_task))
 
