@@ -5,6 +5,7 @@ import yfinance as yf
 
 def run(conn):
     grouped_targets = database.get_grouped_targets(conn)
+    now = datetime.now()
 
     print(grouped_targets)
     # Iterate over all unique symbols
@@ -22,26 +23,29 @@ def run(conn):
                 direction_is_up = data_tuple[2]
                 before_condition = data_tuple[3]
 
-                now = datetime.now()
-
+                print("Task ID: " + task_id)
                 print(now)
                 print(before_condition)
+                print("\n")
 
                 if (now > before_condition):
                     print('Before condition {before_condition} has expired as it was less than the current time {now}')
                     database.remove_task(conn, task_id)
                     return
 
-                    if direction_is_up:
-                        print(dayHigh >= target)
-                        if dayHigh >= target:
-                            database.finish_task(conn, task_id)
-                            print(f"Task #{task_id} finished because day high was {dayHigh}, which is greater than or equals the target {target}")
-                    else:
-                        print(dayHigh <= target)
-                        if dayHigh <= target:
-                            database.finish_task(conn, task_id)
-                            print(f"Task #{task_id} finished because day low was {dayLow}, which is less than or equals the target {target}")
+                print('Before condition {before_condition} has not expired, continue.')
+                print("Direction is up: " + direction_is_up)
+
+                if direction_is_up:
+                    print(dayHigh >= target)
+                    if dayHigh >= target:
+                        database.finish_task(conn, task_id)
+                        print(f"Task #{task_id} finished because day high was {dayHigh}, which is greater than or equals the target {target}")
+                else:
+                    print(dayHigh <= target)
+                    if dayHigh <= target:
+                        database.finish_task(conn, task_id)
+                        print(f"Task #{task_id} finished because day low was {dayLow}, which is less than or equals the target {target}")
 
             print(f"Symbol: {symbol}, day high: {dayHigh}")
 
