@@ -18,8 +18,8 @@ def finish_task(conn, task_id):
     print(before_condition == datetime.max)
     print("\n")
 
-    for subscriber in subscribers:
+    for subscriber_tuple in subscribers:
         before_string = "" if (before_condition == datetime.max) else f" before {before_condition}"
         direction_string = "hit" if direction_is_up else "dropped to"
-        print(f"Message {subscriber} that {symbol} {direction_string} {target} {currency}{before_string}")
+        print(f"Message {subscriber_tuple[0]} that {symbol} {direction_string} {target} {currency}{before_string}")
     database.remove_task(conn, task_id)
