@@ -30,11 +30,11 @@ def run(conn):
                 print("\n")
 
                 if (now > before_condition):
-                    print('Before condition {before_condition} has expired as it was less than the current time {now}')
+                    print(f'Before condition {before_condition} has expired as it was less than the current time {now}')
                     database.remove_task(conn, task_id)
                     return
 
-                print('Before condition {before_condition} has not expired, continue.')
+                print(f'Before condition {before_condition} has not expired, continue.')
                 print("Direction is up: " + str(direction_is_up))
 
                 if direction_is_up:
