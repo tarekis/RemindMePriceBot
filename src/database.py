@@ -1,10 +1,11 @@
-def save_task(conn, user_name, symbol, target, direction_is_up, before_condition):
+def save_task(conn, user_name, symbol, target, direction_is_up, currency, before_condition):
     # Just throw the task in the DB
 
     values_dict = {
         'symbol': symbol,
         'target': target,
         'direction_is_up': direction_is_up,
+        'currency': currency
     }
 
     if before_condition is not None:
@@ -68,7 +69,7 @@ def save_task(conn, user_name, symbol, target, direction_is_up, before_condition
 def get_task_details(conn, task_id):
     get_cur = conn.cursor()
 
-    get_cur.execute("SELECT symbol, target, direction_is_up, before_condition FROM tasks WHERE id = %s;", (task_id,))
+    get_cur.execute("SELECT symbol, target, direction_is_up, currency, before_condition FROM tasks WHERE id = %s;", (task_id,))
     task_details = get_cur.fetchone()
 
     get_cur.close()

@@ -129,7 +129,7 @@ def process_comments(conn, reddit, comments):
                         comment_reply_builder.append(f"Can't find the symbol {symbol}, did you write that correctly?")
 
                     try:
-                        id_of_task = database.save_task(conn, comment_author, symbol, target, direction_is_up, before_condition)
+                        id_of_task = database.save_task(conn, comment_author, symbol, target, direction_is_up, currency, before_condition)
 
                         before_string = "" if (before_condition == datetime.max) else f" before {before_condition}"
                         print(f"I will be messaging you when {symbol} hits {target} {currency}{before_string}\n\n")
