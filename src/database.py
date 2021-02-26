@@ -69,7 +69,7 @@ def get_task_details(conn, task_id):
     get_cur = conn.cursor()
 
     get_cur.execute("SELECT symbol, target, direction_is_up, before_condition FROM tasks WHERE id = %s;", (task_id,))
-    task_details = get_cur.fetchone()[0]
+    task_details = get_cur.fetchone()
 
     get_cur.close()
 
