@@ -78,7 +78,11 @@ def get_task_details(conn, task_id):
 
 
 def remove_task(conn, task_id):
-    print("TODO Implement: Should remove task " + str(task_id))
+    delete_cur = conn.cursor()
+    delete_cur.execute("DELETE FROM tasks WHERE id = %s;", (task_id,))
+
+    conn.commit()
+    delete_cur.close()
 
 
 def get_subscribers(conn, task_id):

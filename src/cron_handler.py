@@ -4,7 +4,7 @@ import messages
 import yfinance as yf
 
 
-def run(conn):
+def run(conn, reddit):
     grouped_targets = database.get_grouped_targets(conn)
     now = datetime.now()
 
@@ -15,8 +15,8 @@ def run(conn):
             ticker = yf.Ticker(symbol)
 
             # Access ticker into, this is where an error is thrown if the ticker was not found
-            dayHigh = ticker.info["dayHigh"]
-            dayLow = ticker.info["dayLow"]
+            day_high = ticker.info["dayHigh"]
+            day_low = ticker.info["dayLow"]
 
             for data_tuple in grouped_targets[symbol]:
                 task_id = data_tuple[0]
@@ -38,15 +38,15 @@ def run(conn):
                 print("Direction is up: " + str(direction_is_up))
 
                 if direction_is_up:
-                    print(dayHigh >= target)
-                    if dayHigh >= target:
-                        print(f"Task #{task_id} finished because day high was {dayHigh}, which is greater than or equals the target {target}")
-                        messages.finish_task(conn, task_id)
+                    print(day_high >= target)
+                    if day_high >= target:
+                        print(f"Task #{task_id} finished because day high was {day_high}, which is greater than or equals the target {target}")
+                        messages.finish_task(conn, reddit, task_id, day_high)
                 else:
-                    print(dayHigh <= target)
-                    if dayHigh <= target:
-                        print(f"Task #{task_id} finished because day low was {dayLow}, which is less than or equals the target {target}")
-                        messages.finish_task(conn, task_id)
+                    print(day_low <= target)
+                    if day_low <= target:
+                        print(f"Task #{task_id} finished because day low was {day_low}, which is less than or equals the target {target}")
+                        messages.finish_task(conn, reddit, task_id, day_low)
 
             print(f"Symbol: {symbol}, day high: {dayHigh}")
 

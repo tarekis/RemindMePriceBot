@@ -145,7 +145,7 @@ def process_comments(conn, reddit, comments):
                 comment_reply_builder.append("Your command seems to be malformed, please check it's format.\n\n")
 
             # Bottom Section
-            comment_reply_builder.append("\n\n\n\n---\n\n^(Beep boop. I am a bot. If there are any issues, contact my) [^Master ](https://www.reddit.com/message/compose/?to=Tarekis&subject=/u/RemindMePriceBot)")
+            comment_reply_builder.append(static.BOTTOM_REPLY_SECTION)
 
             comment_reply = "".join(comment_reply_builder)
 

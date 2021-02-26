@@ -28,7 +28,7 @@ if static.ENVIRONMENT != "development":
     cur.close()
 
     # Use last comment time or None if not available
-    if (len(created_utc_result) > 0):
+    if len(created_utc_result) > 0:
         created_utc = str(created_utc_result[0][0])
     else:
         created_utc = None
@@ -56,7 +56,7 @@ def timed_job():
 def scheduled_job():
     global conn
     try:
-        cron_handler.run(conn)
+        cron_handler.run(conn, reddit)
     except Exception as e:
         print("Error in CRON job occured, restarting DB connection, retrying job")
         print(e)
