@@ -131,6 +131,9 @@ def process_comments(conn, reddit, comments):
                     try:
                         id_of_task = database.save_task(conn, comment_author, symbol, target, direction_is_up, currency, before_condition)
 
+                        print(type(before_condition))
+                        print(before_condition)
+
                         before_string = "" if before_condition is not None else f" before {before_condition}"
                         comment_reply_builder.append(f"I will be messaging you when {symbol} hits {target} {currency}{before_string}\n\n")
 
