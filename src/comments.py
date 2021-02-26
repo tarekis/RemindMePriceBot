@@ -105,7 +105,7 @@ def process_comments(conn, reddit, comments):
 
             body_details = get_comment_body_details(comment_body_lower)
 
-            comment_reply_builder = ["**Please do not use me yet, I'm not finished yet.**\n\n"]
+            comment_reply_builder = ["**Please do not use me yet, I'm not finished yet. Command may change, database cleared, etc**\n\n"]
 
             if body_details is not None:
                 # Deconstruct details
@@ -132,9 +132,7 @@ def process_comments(conn, reddit, comments):
                         id_of_task = database.save_task(conn, comment_author, symbol, target, direction_is_up, currency, before_condition)
 
                         before_string = "" if (before_condition == datetime.max) else f" before {before_condition}"
-                        print(f"I will be messaging you when {symbol} hits {target} {currency}{before_string}\n\n")
-
-                        comment_reply_builder.append("Subscribing to this task ID: " + str(id_of_task))
+                        comment_reply_builder.append("I will be messaging you when {symbol} hits {target} {currency}{before_string}\n\n")
 
                     except Exception as e:
                         print('Error in comment processing')
