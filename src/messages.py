@@ -16,7 +16,7 @@ def finish_task(conn, reddit, task_id, trigger_price):
         trigger_string = "high" if direction_is_up else "low"
         emoji = "📈" if direction_is_up else "📉"
 
-        subject = f"{symbol} {direction_string_past_tens} {target}{currency}"
+        subject = f"{symbol} {direction_string_past_tens} {target} {currency}"
 
         message_builder = []
         message_builder.append(f"You asked me to remind you when {symbol} {direction_string_present_tense} {target} {currency}{before_string}.\n\n")
