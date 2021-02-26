@@ -126,6 +126,12 @@ def process_comments(conn, reddit, comments):
                         currency = ticker.info["currency"]
                         dayHigh = ticker.info["dayHigh"]
 
+                    except Exception as e:
+                        print('Error in symbol aquisition')
+                        print(e)
+                        comment_reply_builder.append(f"Can't find the symbol {symbol}, did you write that correctly?")
+
+                    try:
                         id_of_task = database.save_task(conn, comment_author, symbol, target, direction_is_up, before_condition)
 
                         comment_reply_builder.append(f"Haven't fully saved your lookup in the DB yet, I actually should tell you when {symbol} hits {target} {currency}\n\n")
@@ -136,7 +142,8 @@ def process_comments(conn, reddit, comments):
                     except Exception as e:
                         print('Error in comment processing')
                         print(e)
-                        comment_reply_builder.append(f"Can't find the symbol {symbol}, did you write that correctly?")
+                        comment_reply_builder.append(f"Something happend that should have not happend, sorry that happened. Will try to fix it ASAP.")
+
                 else:
                     comment_reply_builder.append("Your command specified a before time, but the time could not be interpreted.\n\n")
             else:
