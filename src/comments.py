@@ -14,7 +14,7 @@ cal = parsedatetime.Calendar()
 direction_is_up_regex = "hits"
 direction_is_down_regex = "drops\s*(?:to)?"
 # "Explanation": https://regex101.com/r/svsM5v/1
-command_regex = f"{static.COMMAND_LOWER}\s+(?:of\s+)?([^\s]+)\s+(?:(hits|drops\s*(?:to)?)\s+)?([0-9]+(?:[,.][0-9]+)?)(?:\s+(?:(?:before)\s+([^\s]*))?)?"
+command_regex = f"{static.COMMAND_LOWER}\s+(?:of\s+)?([^\s]+)\s+(?:(hits|drops\s*(?:to)?)\s+)?([0-9]+(?:[,.][0-9]+)?)(?:\s+(?:(?:before)\s+([^\n]*))?)?"
 
 
 def get_direction_is_up(direction_raw):
