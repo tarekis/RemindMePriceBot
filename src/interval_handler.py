@@ -2,6 +2,10 @@ import static
 import comments
 import requests
 
+request_headers = {
+    'User-Agent': static.USER_AGENT,
+}
+
 def build_url(query_paramters_dict):
     url_builder = [static.API_URL, "?"]
 
@@ -14,12 +18,25 @@ def build_url(query_paramters_dict):
     url_builder.pop()
     return ''.join(url_builder)
 
-def run(conn, reddit, created_utc):
+
+def find_index_of_comment_with_id(comments_data, comment_id):
+    for index, value in enumerate(comments_data):
+        if value['id'] == comment_id:
+            return index
+    return None
+
+
+def not_exact_created_utc(item, created_utc):
+    return item.created_utc != created_utc
+
+
+def run(conn, reddit, created_utc, comment_id):
     try:
         # Build the URL to request
         comment_url = build_url({
             "q": static.COMMAND,
-            "size": 2,
+            "size": 1,
+            "sort": "asc",
             "filter": ",".join([
                 "id",
                 "author",
@@ -29,29 +46,45 @@ def run(conn, reddit, created_utc):
             "min_created_utc": created_utc
         })
 
-        print(comment_url)
+        print("Running query with: " + str(created_utc))
         # Request and parse the response
-        parsed_comment_json = requests.get(comment_url).json()
+        parsed_comment_json = requests.get(comment_url, headers=request_headers).json()
+
+        comments_data = parsed_comment_json["data"]
 
         # Process comments if any were found
-        if (len(parsed_comment_json["data"]) > 0):
-            print(parsed_comment_json)
+        if len(comments_data) > 0:
+            print(comments_data)
 
-            # Update last comment time so the next request can omit already processed comments by including only >= date + 1
-            # This is done only when a comment was recieved because otherwise we'd increase the last comment time for no reason every loop
-            created_utc = int(parsed_comment_json["data"][0]["created_utc"]) + 1
-            if static.ENVIRONMENT != "development":
-                # Update the last comment time in DB so if the bot restarts it can read that value and start where it left off
-                update_cur = conn.cursor()
-                update_cur.execute("UPDATE comment_time SET created_utc = {}". format(created_utc))
+            # Try to find the index of the last processed comment, if present remove all items before it and itslef
+            # as those were crated in the same epoch and must have been processed in an earlier cycle
+            index_of_last_comment = find_index_of_comment_with_id(comments_data, comment_id)
+            if index_of_last_comment is not None:
+                comments_data = comments_data[index_of_last_comment+1:None]
+
+            # If no more comments are available after slicing by the comment id this means
+            # that this cycle has caught up with all previously created comments and
+            # the created_utc can be moved up by one so the next cycle will not re-request the ones from this epoch
+            update_cur = conn.cursor()
+            if len(comments_data) == 0:
+                update_cur.execute("UPDATE last_comment SET created_utc = %s", (int(created_utc) + 1,))
                 conn.commit()
                 update_cur.close()
+                return
+            
+            # Update last comment time and comment id when any comments were recieved
+            last_comment = comments_data["data"][-1]
+            created_utc = last_comment["created_utc"]
+            comment_id = last_comment["id"]
+            # Update the last comment time in DB so if the bot restarts it can read that value and start where it left off
+            update_cur.execute("UPDATE last_comment SET created_utc = %s, comment_id = %s", (created_utc, comment_id))
+            conn.commit()
+            update_cur.close()
 
-            comments.process_comments(conn, reddit, parsed_comment_json["data"])
+            comments.process_comments(conn, reddit, comments_data)
 
     except Exception as e:
         print("Fetching comments failed, pushshift API probably is down")
         print(str(e.__class__.__name__) + ": " + str(e))
 
-    print(str(created_utc))
-    return str(created_utc)
+    return (str(created_utc), str(comment_id))

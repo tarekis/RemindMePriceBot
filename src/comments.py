@@ -129,13 +129,17 @@ def process_comments(conn, reddit, comments):
                         comment_reply_builder.append(f"Can't find the symbol {symbol}, did you write that correctly?")
 
                     try:
-                        id_of_task = database.save_task(conn, comment_author, symbol, target, direction_is_up, currency, before_condition)
+                        database.save_task(conn, comment_author, symbol, target, direction_is_up, currency, before_condition)
 
                         print(type(before_condition))
                         print(before_condition)
 
                         before_string = "" if before_condition is None else f" before {before_condition}"
-                        comment_reply_builder.append(f"I will be messaging you when {symbol} hits {target} {currency}{before_string}\n\n")
+                        direction_string = "hits" if direction_is_up else "drops to"
+                        comment_reply_builder.append(f"I will be messaging you when {symbol} {direction_string} {target} {currency}{before_string}.\n\n")
+
+                        # TODO add ability to do this
+                        # comment_reply_builder.append(f"[^CLICK THIS LINK ](https://np.reddit.com/message/compose/?to=RemindMePriceBot&subject=Reminder&message={additional_subscriber_message})to send a PM to also be reminded and to reduce spam..\n\n")
 
                     except Exception as e:
                         print('Error in comment processing')

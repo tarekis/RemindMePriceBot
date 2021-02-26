@@ -63,8 +63,6 @@ def save_task(conn, user_name, symbol, target, direction_is_up, currency, before
     print("task_id " + str(task_id))
     print("subscriber_id " + str(subscriber_id))
 
-    return task_id
-
 
 def get_task_details(conn, task_id):
     get_cur = conn.cursor()

@@ -1,6 +1,6 @@
 import praw
 from decouple import config
-
+import static
 
 def bot_login():
     print("Logging in..")
@@ -10,9 +10,9 @@ def bot_login():
             password=config("reddit_password"),
             client_id=config("client_id"),
             client_secret=config("client_secret"),
-            user_agent="python.heroku.tarekis.price-check-bot:v0.0.1 (by u/Tarekis)"
+            user_agent=static.USER_AGENT
         )
         print("Logged in!")
-    except:
+    except Exception:
         print("Failed to log in!")
     return r
