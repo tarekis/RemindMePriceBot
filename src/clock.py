@@ -46,6 +46,7 @@ def timed_job():
     except Exception as e:
         print("Error in INTERVAL job occured, restarting DB connection")
         print(e)
+        global conn
         conn.close()
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
@@ -57,6 +58,7 @@ def scheduled_job():
     except Exception as e:
         print("Error in CRON job occured, restarting DB connection")
         print(e)
+        global conn
         conn.close()
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
