@@ -25,18 +25,18 @@ conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 # Create Cursor to get last valid comment time
 cur = conn.cursor()
 cur.execute("SELECT created_utc, comment_id from last_comment")
-last_comment_result = cur.fetchall()
+last_comment_result = cur.fetchone()
 cur.close()
 
 # Use last comment time or None if not available
-if len(last_comment_result) > 0:
-    created_utc = str(last_comment_result[0][0])
+if last_comment_result is not None:
+    created_utc = str(last_comment_result[0])
 else:
     created_utc = None
 
 # Use last comment id or None if not available
-if len(last_comment_result) > 0:
-    comment_id = str(last_comment_result[0][1])
+if last_comment_result is not None:
+    comment_id = str(last_comment_result[1])
 else:
     comment_id = None
 
@@ -52,7 +52,7 @@ def timed_job():
     global comment_id
     global conn
     try:
-        created_utc = interval_handler.run(conn, reddit, created_utc, comment_id)
+        created_utc, comment_id = interval_handler.run(conn, reddit, created_utc, comment_id)
     except Exception as e:
         print("Error in INTERVAL job occured, restarting DB connection")
         print(e)
