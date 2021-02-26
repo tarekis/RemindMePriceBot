@@ -8,10 +8,12 @@ import yfinance as yf
 def run(conn, reddit):
     grouped_targets = database.get_grouped_targets(conn)
     now = datetime.now()
+    print(f"Running CRON job at {now}.")
 
     print(grouped_targets)
     # Iterate over all unique symbols
     for symbol in grouped_targets.keys():
+        print(f'Checking {len(grouped_targets[symbol])} tasks for symbol {symbol}')
         try:
             ticker = yf.Ticker(symbol)
 
@@ -25,26 +27,16 @@ def run(conn, reddit):
                 direction_is_up = data_tuple[2]
                 before_condition = data_tuple[3]
 
-                print("Task ID: " + str(task_id))
-                print(now)
-                print(before_condition)
-                print("\n")
-
                 if (now > before_condition):
                     print(f'Before condition {before_condition} has expired as it was less than the current time {now}')
                     database.remove_task(conn, task_id)
                     return
 
-                print(f'Before condition {before_condition} has not expired, continue.')
-                print("Direction is up: " + str(direction_is_up))
-
                 if direction_is_up:
-                    print(day_high >= target)
                     if day_high >= target:
                         print(f"Task #{task_id} finished because day high was {day_high}, which is greater than or equals the target {target}")
                         messages.finish_task(conn, reddit, task_id, day_high)
                 else:
-                    print(day_low <= target)
                     if day_low <= target:
                         print(f"Task #{task_id} finished because day low was {day_low}, which is less than or equals the target {target}")
                         messages.finish_task(conn, reddit, task_id, day_low)

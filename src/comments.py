@@ -68,7 +68,6 @@ def get_comment_body_details(comment_body):
 # TODO guess old posts wont be replyable so send a message instead then
 def reply_to_comment(reddit, comment_id, comment_reply, comment_author, comment_body_lower):
     try:
-        print("\nReply details:\nComment: \"{}\"\nUser: u/{}\a". format(comment_body_lower, comment_author))
         comment_to_be_replied_to = reddit.comment(id=comment_id)
         comment_to_be_replied_to.reply(comment_reply)
 
@@ -97,13 +96,7 @@ def process_comments(conn, reddit, comments):
         comment_author = comment["author"]
         comment_body_lower = comment["body"].lower()
 
-        print(static.COMMAND_LOWER)
-        print(comment_body_lower)
-        print(static.COMMAND_LOWER in comment_body_lower)
-
         if (static.COMMAND_LOWER in comment_body_lower and comment_author != static.REDDIT_USERNAME):
-            print("\n\nFound a comment!")
-
             body_details = get_comment_body_details(comment_body_lower)
 
             comment_reply_builder = ["**Please do not use me yet, I'm not finished yet. Command may change, database cleared, etc**\n\n"]

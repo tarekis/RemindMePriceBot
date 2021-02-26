@@ -11,7 +11,6 @@ def save_task(conn, user_name, symbol, target, direction_is_up, currency, before
     if before_condition is not None:
         values_dict['before_condition'] = before_condition
 
-    print(values_dict)
     keys = values_dict.keys()
     values_list = list(values_dict.values())
     repeated_values = tuple(values_list + values_list)
@@ -60,9 +59,6 @@ def save_task(conn, user_name, symbol, target, direction_is_up, currency, before
     conn.commit()
     create_cur.close()
 
-    print("task_id " + str(task_id))
-    print("subscriber_id " + str(subscriber_id))
-
 
 def get_task_details(conn, task_id):
     get_cur = conn.cursor()
@@ -108,9 +104,6 @@ def get_grouped_targets(conn):
     select_cur.execute("SELECT id, symbol, target, direction_is_up, before_condition from tasks")
     results = select_cur.fetchall()
     select_cur.close()
-
-    print("Printing all results from tasks table")
-    print(results)
 
     # Sort all targets by symbol
     grouped_targets = {}
