@@ -6,6 +6,7 @@ import cron_handler
 import interval_handler
 import psycopg2
 import static
+import logging
 
 # TODO rename uppercase
 global reddit
@@ -45,8 +46,7 @@ def timed_job():
     try:
         created_utc, comment_id = interval_handler.run(conn, reddit, created_utc, comment_id)
     except Exception as e:
-        print("Error in INTERVAL job occured, restarting DB connection")
-        print(e)
+        logging.exception("Error in INTERVAL job occured, restarting DB connection")
         conn.close()
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
@@ -57,12 +57,12 @@ def scheduled_job():
     try:
         cron_handler.run(conn, reddit)
     except Exception as e:
-        print("Error in CRON job occured, restarting DB connection, retrying job")
+        logging.exception("Error in CRON job occured, restarting DB connection")
         print(e)
         conn.close()
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         time.sleep(15)
-        cron_handler.run(conn)
+        cron_handler.run(conn, reddit)
 
 
 sched.start()

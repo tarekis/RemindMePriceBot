@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 import database
 import messages
@@ -51,5 +52,5 @@ def run(conn, reddit):
             print(f"Symbol: {symbol}, day high: {day_high}, day low: {day_low}")
 
         except Exception as e:
-            print('Error when fetching finance data for ' + symbol)
+            logging.exception("Error when fetching finance data for " + symbol)
             print(e)

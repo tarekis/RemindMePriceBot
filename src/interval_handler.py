@@ -56,7 +56,6 @@ def run(conn, reddit, created_utc, comment_id):
 
         # Process comments if any were found
         if len(comments_data) > 0:
-            print(comments_data)
 
             # Try to find the index of the last processed comment, if present remove all items before it and itslef
             # as those were crated in the same epoch and must have been processed in an earlier cycle

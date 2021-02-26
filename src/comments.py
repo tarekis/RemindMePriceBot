@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 import database
 import parsedatetime
@@ -142,8 +143,7 @@ def process_comments(conn, reddit, comments):
                         # comment_reply_builder.append(f"[^CLICK THIS LINK ](https://np.reddit.com/message/compose/?to=RemindMePriceBot&subject=Reminder&message={additional_subscriber_message})to send a PM to also be reminded and to reduce spam..\n\n")
 
                     except Exception as e:
-                        print('Error in comment processing')
-                        print(e)
+                        logging.exception("Error in comment processing")
                         comment_reply_builder.append(f"Something happend that should have not happend, sorry that happened. Will try to fix it ASAP.")
 
                 else:
