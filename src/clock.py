@@ -44,7 +44,7 @@ def timed_job():
     global comment_id
     global conn
     try:
-        created_utc, comment_id = interval_handler.run(conn, reddit, created_utc, comment_id)
+        (created_utc, comment_id) = interval_handler.run(conn, reddit, created_utc, comment_id)
     except Exception as e:
         logging.exception("Error in INTERVAL job occured, restarting DB connection")
         conn.close()
