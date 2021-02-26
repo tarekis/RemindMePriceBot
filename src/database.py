@@ -20,7 +20,7 @@ def save_task(conn, user_name, symbol, target, direction_is_up, before_condition
     create_cur = conn.cursor()
     create_cur.execute(f"""
         WITH cte AS (
-            INSERT INTO tasks({"".join(keys)})
+            INSERT INTO tasks({", ".join(keys)})
             VALUES ({"%s" * len(keys)})
             ON CONFLICT DO NOTHING
             RETURNING id
