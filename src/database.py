@@ -54,7 +54,7 @@ def save_task(conn, user_name, symbol, target, direction_is_up, before_condition
     subscriber_id = create_cur.fetchone()[0]
 
     # Create a relation between subscriber and task
-    create_cur.execute("INSERT INTO tasks_subscribers(task_id, subscriber_id) VALUES (%s %s)", (task_id, subscriber_id))
+    create_cur.execute("INSERT INTO tasks_subscribers(task_id, subscriber_id) VALUES (%s, %s)", (task_id, subscriber_id))
 
     conn.commit()
     create_cur.close()
