@@ -23,12 +23,11 @@ def run(conn):
                 before_condition = data_tuple[3]
 
                 now = datetime.now()
-                before_condition_datetime = datetime(before_condition)
 
                 print(now)
-                print(before_condition_datetime)
+                print(before_condition)
 
-                if (now > before_condition_datetime):
+                if (now > before_condition):
                     print('Before condition {before_condition} has expired as it was less than the current time {now}')
                     database.remove_task(conn, task_id)
                     return
