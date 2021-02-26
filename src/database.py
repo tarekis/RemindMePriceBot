@@ -66,13 +66,13 @@ def save_task(conn, user_name, symbol, target, direction_is_up, before_condition
 
 
 def remove_task(conn, task_id):
-    print("TODO Implement: Should remove task " + task_id)
+    print("TODO Implement: Should remove task " + str(task_id))
 
 
 def get_subscribers(conn, task_id):
     get_cur = conn.cursor()
 
-    get_cur.execute("SELECT subscriber_id FROM tasks_subscribers WHERE task_id = %s;", (task_id,))
+    get_cur.execute("SELECT subscribers.user_name FROM subscribers, tasks_subscribers WHERE tasks_subscribers.task_id = %s;", (task_id,))
     subscribers = get_cur.fetchall()
 
     get_cur.close()
