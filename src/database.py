@@ -65,6 +65,17 @@ def save_task(conn, user_name, symbol, target, direction_is_up, before_condition
     return task_id
 
 
+def get_task_details(conn, task_id):
+    get_cur = conn.cursor()
+
+    get_cur.execute("SELECT symbol, target, direction_is_up, before_condition FROM tasks WHERE id = %s;", (task_id,))
+    task_details = get_cur.fetchone()[0]
+
+    get_cur.close()
+
+    return task_details
+
+
 def remove_task(conn, task_id):
     print("TODO Implement: Should remove task " + str(task_id))
 
