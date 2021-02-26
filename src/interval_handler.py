@@ -48,7 +48,7 @@ def run(conn, reddit, created_utc, comment_id):
             "min_created_utc": created_utc
         })
 
-        print("Running query with: " + str(created_utc))
+        print(f"Running query with starting utc {created_utc} and comment_id {comment_id}\n")
         # Request and parse the response
         parsed_comment_json = requests.get(comment_url, headers=request_headers).json()
 
@@ -75,7 +75,7 @@ def run(conn, reddit, created_utc, comment_id):
                 return
             
             # Update last comment time and comment id when any comments were recieved
-            last_comment = comments_data["data"][-1]
+            last_comment = comments_data[-1]
             created_utc = last_comment["created_utc"]
             comment_id = last_comment["id"]
             # Update the last comment time in DB so if the bot restarts it can read that value and start where it left off
