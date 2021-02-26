@@ -37,7 +37,7 @@ def run(conn, reddit, created_utc, comment_id):
         # Build the URL to request
         comment_url = build_url({
             "q": static.COMMAND,
-            "size": 1,
+            "size": 2,
             "sort": "asc",
             "filter": ",".join([
                 "id",
