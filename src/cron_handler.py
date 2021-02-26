@@ -48,7 +48,7 @@ def run(conn, reddit):
                         print(f"Task #{task_id} finished because day low was {day_low}, which is less than or equals the target {target}")
                         messages.finish_task(conn, reddit, task_id, day_low)
 
-            print(f"Symbol: {symbol}, day high: {day_high}")
+            print(f"Symbol: {symbol}, day high: {day_high}, day low: {day_low}")
 
         except Exception as e:
             print('Error when fetching finance data for ' + symbol)
