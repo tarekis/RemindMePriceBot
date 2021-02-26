@@ -11,15 +11,16 @@ def finish_task(conn, reddit, task_id, trigger_price):
 
     for subscriber_tuple in subscribers:
         before_string = "" if (before_condition == datetime.max) else f" before {before_condition}"
-        direction_string = "hit" if direction_is_up else "dropped to"
+        direction_string_present_tense = "hits" if direction_is_up else "drops to"
+        direction_string_past_tens = "hit" if direction_is_up else "dropped to"
         trigger_string = "high" if direction_is_up else "low"
         emoji = "📈" if direction_is_up else "📉"
 
-        subject = f"{symbol} {direction_string} {currency}{before_string}"
+        subject = f"{symbol} {direction_string_past_tens} {target}{currency}"
 
         message_builder = []
-        message_builder.append(f"You asked me to remind you when {symbol} {direction_string} {target} {currency}{before_string}.\n\n")
-        message_builder.append(f" {symbol} just {direction_string} with the current {trigger_string} at {trigger_price}. {emoji}\n\n")
+        message_builder.append(f"You asked me to remind you when {symbol} {direction_string_present_tense} {target} {currency}{before_string}.\n\n")
+        message_builder.append(f"{symbol} just {direction_string_past_tens} {target} {currency} with the current {trigger_string} at {trigger_price}. {emoji}\n\n")
         message_builder.append(static.BOTTOM_REPLY_SECTION)
 
         message = "".join(message_builder)
