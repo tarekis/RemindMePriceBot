@@ -86,5 +86,6 @@ def run(conn, reddit, created_utc, comment_id):
     except Exception as e:
         print("Fetching comments failed, pushshift API probably is down")
         print(str(e.__class__.__name__) + ": " + str(e))
+        print(e.__traceback__)
 
     return (str(created_utc), str(comment_id))

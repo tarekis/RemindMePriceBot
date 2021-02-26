@@ -28,19 +28,10 @@ cur.execute("SELECT created_utc, comment_id from last_comment")
 last_comment_result = cur.fetchone()
 cur.close()
 
-# Use last comment time or None if not available
-if last_comment_result is not None:
-    created_utc = str(last_comment_result[0])
-else:
-    created_utc = None
+created_utc = str(last_comment_result[0])
+comment_id = str(last_comment_result[1])
 
-# Use last comment id or None if not available
-if last_comment_result is not None:
-    comment_id = str(last_comment_result[1])
-else:
-    comment_id = None
-
-print("Started bot cycle with starting utc: " + str(created_utc))
+print(f"Started bot cycle with starting utc {created_utc} and comment_id {comment_id}")
 
 sched = BlockingScheduler()
 
