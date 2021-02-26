@@ -41,24 +41,24 @@ sched = BlockingScheduler()
 @sched.scheduled_job('interval', seconds=10)
 def timed_job():
     global created_utc
+    global conn
     try:
         created_utc = interval_handler.run(conn, reddit, created_utc)
     except Exception as e:
         print("Error in INTERVAL job occured, restarting DB connection")
         print(e)
-        global conn
         conn.close()
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
 
 @sched.scheduled_job('cron', day_of_week='0-6', second=0)
 def scheduled_job():
+    global conn
     try:
         cron_handler.run(conn)
     except Exception as e:
         print("Error in CRON job occured, restarting DB connection")
         print(e)
-        global conn
         conn.close()
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
