@@ -4,8 +4,6 @@ import parsedatetime
 import re
 import static
 import time
-
-# TODO remove
 import yfinance as yf
 
 cal = parsedatetime.Calendar()
@@ -124,7 +122,6 @@ def process_comments(conn, reddit, comments):
 
                         # Access ticker into, this is where an error is thrown if the ticker was not found
                         currency = ticker.info["currency"]
-                        dayHigh = ticker.info["dayHigh"]
 
                     except Exception as e:
                         print('Error in symbol aquisition')
@@ -134,8 +131,8 @@ def process_comments(conn, reddit, comments):
                     try:
                         id_of_task = database.save_task(conn, comment_author, symbol, target, direction_is_up, before_condition)
 
-                        comment_reply_builder.append(f"Haven't fully saved your lookup in the DB yet, I actually should tell you when {symbol} hits {target} {currency}\n\n")
-                        comment_reply_builder.append(f"I hope you're not sad about it, here's {symbol}'s day high instead: {dayHigh} {currency}.\n\n")
+                        before_string = "" if (before_condition == datetime.max) else f" before {before_condition}"
+                        print(f"I will be messaging you when {symbol} hits {target} {currency}{before_string}\n\n")
 
                         comment_reply_builder.append("Subscribing to this task ID: " + str(id_of_task))
 
