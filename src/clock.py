@@ -50,8 +50,8 @@ def timed_job():
         conn.close()
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
-
-@sched.scheduled_job('cron', day_of_week='0-6', second=0)
+# TODO change to minute, so it runs hourly
+@sched.scheduled_job('cron', second=0)
 def scheduled_job():
     global conn
     try:
