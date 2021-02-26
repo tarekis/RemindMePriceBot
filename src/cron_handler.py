@@ -40,13 +40,13 @@ def run(conn):
                 if direction_is_up:
                     print(dayHigh >= target)
                     if dayHigh >= target:
-                        messages.finish_task(conn, task_id)
                         print(f"Task #{task_id} finished because day high was {dayHigh}, which is greater than or equals the target {target}")
+                        messages.finish_task(conn, task_id)
                 else:
                     print(dayHigh <= target)
                     if dayHigh <= target:
-                        messages.finish_task(conn, task_id)
                         print(f"Task #{task_id} finished because day low was {dayLow}, which is less than or equals the target {target}")
+                        messages.finish_task(conn, task_id)
 
             print(f"Symbol: {symbol}, day high: {dayHigh}")
 
