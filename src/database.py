@@ -12,8 +12,8 @@ def save_task(conn, user_name, symbol, target, direction_is_up, before_condition
 
     print(values_dict)
     keys = values_dict.keys()
-    values_dict_values = list(values_dict.values())
-    values = tuple(values_dict_values + values_dict_values)
+    values_list = list(values_dict.values())
+    repeated_values = tuple(values_list + values_list)
 
     # Create and return the ID of new task or return the ID of an existing task with the same conditions
     # Inserts only values that exist in the values dict
@@ -21,7 +21,7 @@ def save_task(conn, user_name, symbol, target, direction_is_up, before_condition
     create_cur.execute(f"""
         WITH cte AS (
             INSERT INTO tasks({", ".join(keys)})
-            VALUES ({"%s" * len(keys)})
+            VALUES ({", ".join(["%s"] * len(keys))})
             ON CONFLICT DO NOTHING
             RETURNING id
         )
@@ -32,7 +32,7 @@ def save_task(conn, user_name, symbol, target, direction_is_up, before_condition
         FROM tasks
         {"WHERE " + " AND ".join(map(lambda name: f"{name} = %s", keys))}
         AND NOT EXISTS (SELECT 1 FROM cte);
-    """, values)
+    """, repeated_values)
     task_id = create_cur.fetchone()[0]
 
     # Add the user to the subscriber list if they are not yet present

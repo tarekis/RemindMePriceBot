@@ -1,6 +1,7 @@
 from apscheduler.schedulers.blocking import BlockingScheduler
 from decouple import config
 import bot_login
+import time
 import cron_handler
 import interval_handler
 import psycopg2
@@ -57,10 +58,12 @@ def scheduled_job():
     try:
         cron_handler.run(conn)
     except Exception as e:
-        print("Error in CRON job occured, restarting DB connection")
+        print("Error in CRON job occured, restarting DB connection, retrying job")
         print(e)
         conn.close()
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        time.sleep(15)
+        cron_handler.run(conn)
 
 
 sched.start()
