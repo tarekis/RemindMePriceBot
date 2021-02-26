@@ -23,7 +23,7 @@ def run(conn):
                 direction_is_up = data_tuple[2]
                 before_condition = data_tuple[3]
 
-                print("Task ID: " + task_id)
+                print("Task ID: " + str(task_id))
                 print(now)
                 print(before_condition)
                 print("\n")
@@ -34,7 +34,7 @@ def run(conn):
                     return
 
                 print('Before condition {before_condition} has not expired, continue.')
-                print("Direction is up: " + direction_is_up)
+                print("Direction is up: " + str(direction_is_up))
 
                 if direction_is_up:
                     print(dayHigh >= target)
