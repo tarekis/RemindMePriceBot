@@ -20,7 +20,7 @@ def finish_task(conn, reddit, task_id, trigger_price):
 
         message_builder = []
         message_builder.append(f"You asked me to remind you when {symbol} {direction_string_present_tense} {target} {currency}{before_string}.\n\n")
-        message_builder.append(f"{symbol} {direction_string_past_tens} {target} {currency} with the current {trigger_string} at {trigger_price}. {emoji}\n\n")
+        message_builder.append(f"{symbol} {direction_string_past_tens} {target} {currency} today with the current {trigger_string} at {trigger_price}. {emoji}\n\n")
         message_builder.append(static.BOTTOM_REPLY_SECTION)
 
         message = "".join(message_builder)
