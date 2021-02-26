@@ -1,6 +1,8 @@
-import static
-import comments
+import logging
 import requests
+import comments
+import static
+
 
 request_headers = {
     'User-Agent': static.USER_AGENT,
@@ -84,8 +86,7 @@ def run(conn, reddit, created_utc, comment_id):
             comments.process_comments(conn, reddit, comments_data)
 
     except Exception as e:
-        print("Fetching comments failed, pushshift API probably is down")
         print(str(e.__class__.__name__) + ": " + str(e))
-        print(e.__traceback__)
+        logging.exception("Fetching comments failed, pushshift API probably is down")
 
     return (str(created_utc), str(comment_id))
