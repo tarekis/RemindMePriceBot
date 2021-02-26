@@ -71,7 +71,7 @@ def run(conn, reddit, created_utc, comment_id):
                 update_cur.execute("UPDATE last_comment SET created_utc = %s", (int(created_utc) + 1,))
                 conn.commit()
                 update_cur.close()
-                return
+                return (str(created_utc), str(comment_id))
             
             # Update last comment time and comment id when any comments were recieved
             last_comment = comments_data[-1]
@@ -88,7 +88,4 @@ def run(conn, reddit, created_utc, comment_id):
         print(str(e.__class__.__name__) + ": " + str(e))
         logging.exception("Fetching comments failed, pushshift API probably is down")
 
-    print("return this")
-    print(type((str(created_utc), str(comment_id))))
-    print((str(created_utc), str(comment_id)))
     return (str(created_utc), str(comment_id))
