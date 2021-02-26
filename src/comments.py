@@ -98,6 +98,10 @@ def process_comments(conn, reddit, comments):
         comment_author = comment["author"]
         comment_body_lower = comment["body"].lower()
 
+        print(static.COMMAND_LOWER)
+        print(comment_body_lower)
+        print(static.COMMAND_LOWER in comment_body_lower)
+
         if (static.COMMAND_LOWER in comment_body_lower and comment_author != static.REDDIT_USERNAME):
             print("\n\nFound a comment!")
 
