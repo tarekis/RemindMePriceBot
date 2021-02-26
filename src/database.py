@@ -84,7 +84,16 @@ def remove_task(conn, task_id):
 def get_subscribers(conn, task_id):
     get_cur = conn.cursor()
 
-    get_cur.execute("SELECT subscribers.user_name FROM subscribers, tasks_subscribers WHERE tasks_subscribers.task_id = %s;", (task_id,))
+    get_cur.execute("""
+        WITH subscribers_of_task AS (
+            SELECT subscriber_id
+            FROM tasks_subscribers
+            WHERE task_id = %s
+        )
+        SELECT user_name
+        FROM subscribers
+        WHERE id IN (SELECT subscriber_id FROM subscribers_of_task);
+    """, (task_id,))
     subscribers = get_cur.fetchall()
 
     get_cur.close()
