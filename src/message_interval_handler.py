@@ -24,4 +24,3 @@ def run(reddit):
             except Exception as err:
                 logging.exception(f"Error marking message read: {message.id} : u/{message.author.name}")
 
-    return len(messages)
