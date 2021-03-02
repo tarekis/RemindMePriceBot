@@ -3,7 +3,9 @@ import static
 import database
 
 def process_message(reddit, message):
-    print(message)
+    print(message.id)
+    print(message.author)
+    print(message.body)
     
 
 def finish_task(conn, reddit, task_id, trigger_price):

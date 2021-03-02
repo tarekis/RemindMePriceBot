@@ -43,8 +43,7 @@ def run(conn, reddit, created_utc, comment_id):
                 "id",
                 "author",
                 "created_utc",
-                "body",
-                "parent_id"
+                "body"
             ]),
             "min_created_utc": created_utc
         })
@@ -86,7 +85,6 @@ def run(conn, reddit, created_utc, comment_id):
             comments.process_comments(conn, reddit, comments_data)
 
     except Exception as e:
-        print(str(e.__class__.__name__) + ": " + str(e))
         logging.exception("Fetching comments failed, pushshift API probably is down")
 
     return (str(created_utc), str(comment_id))

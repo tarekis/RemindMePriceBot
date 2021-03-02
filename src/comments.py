@@ -94,14 +94,13 @@ def process_comments(conn, reddit, comments):
         # Aggregate all used fields
         comment_id = comment["id"]
         comment_author = comment["author"]
-        comment_parent_id = comment["parent_id"]
         comment_body_lower = comment["body"].lower()
 
-        comm = reddit.comment(id=comment_parent_id)
+        parent_comment = reddit.comment(id=comment_id).parent()
 
         print("This should be the permalink to the parent.")
-        print(comm)
-        print(comm.permalink)        
+        print(parent_comment)
+        print(parent_comment.permalink)
 
         if (static.COMMAND_LOWER in comment_body_lower and comment_author != static.REDDIT_USERNAME):
             body_details = get_comment_body_details(comment_body_lower)
@@ -130,7 +129,7 @@ def process_comments(conn, reddit, comments):
                         comment_reply_builder.append(f"Can't find the symbol {symbol}, did you write that correctly?")
 
                     try:
-                        database.save_task(conn, comment_author, comment_id, symbol, target, direction_is_up, currency, before_condition)
+                        database.save_task(conn, comment_author, parent_comment.id, symbol, target, direction_is_up, currency, before_condition)
 
                         print(type(before_condition))
                         print(before_condition)
