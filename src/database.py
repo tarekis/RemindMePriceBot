@@ -74,7 +74,7 @@ def save_task(conn, user_name, source, symbol, target, direction_is_up, currency
     subscriber_id = create_cur.fetchone()[0]
 
     # Create a relation between source and task
-    create_cur.execute("INSERT INTO sources_tasks(source_id, task_id) VALUES (%s, %s) ON CONFLICT DO NOTHING;", (source_id, subscriber_id))
+    create_cur.execute("INSERT INTO sources_tasks(source_id, task_id) VALUES (%s, %s) ON CONFLICT DO NOTHING;", (source_id, task_id))
 
     # Create a relation between source and subscriber
     create_cur.execute("INSERT INTO sources_subscribers(source_id, subscriber_id) VALUES (%s, %s) ON CONFLICT DO NOTHING;", (source_id, subscriber_id))
