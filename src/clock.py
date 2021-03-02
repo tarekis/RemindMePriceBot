@@ -3,7 +3,8 @@ from decouple import config
 import bot_login
 import time
 import cron_handler
-import interval_handler
+import comment_interval_handler
+import message_interval_handler
 import psycopg2
 import static
 import logging
@@ -44,11 +45,19 @@ def timed_job():
     global comment_id
     global conn
     try:
-        (created_utc, comment_id) = interval_handler.run(conn, reddit, created_utc, comment_id)
+        (created_utc, comment_id) = comment_interval_handler.run(conn, reddit, created_utc, comment_id)
     except Exception as e:
-        logging.exception("Error in INTERVAL job occured, restarting DB connection")
+        logging.exception("Error in COMMENT INTERVAL job occured, restarting DB connection")
         conn.close()
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+
+# TODO change to 60
+@sched.scheduled_job('interval', seconds=10)
+def timed_job():
+    try:
+        message_interval_handler.run(reddit)
+    except Exception as e:
+        logging.exception("Error in MESSAGE INTERVAL job occured")
 
 # TODO change to minute, so it runs hourly
 @sched.scheduled_job('cron', second=0)

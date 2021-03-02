@@ -1,4 +1,4 @@
-def save_task(conn, user_name, symbol, target, direction_is_up, currency, before_condition):
+def save_task(conn, user_name, source, symbol, target, direction_is_up, currency, before_condition):
     # Just throw the task in the DB
 
     values_dict = {
@@ -35,6 +35,26 @@ def save_task(conn, user_name, symbol, target, direction_is_up, currency, before
     """, repeated_values)
     task_id = create_cur.fetchone()[0]
 
+    # Create and return the ID of new source or return the ID of an existing task with the same conditions
+    # Inserts only values that exist in the values dict
+    create_cur = conn.cursor()
+    create_cur.execute(f"""
+        WITH cte AS (
+            INSERT INTO sources(comment_id)
+            VALUES (%s)
+            ON CONFLICT DO NOTHING
+            RETURNING id
+        )
+        SELECT (SELECT id FROM cte) AS result
+        WHERE EXISTS (SELECT 1 FROM cte)
+        UNION ALL
+        SELECT id
+        FROM sources
+        WHERE comment_id = %s
+        AND NOT EXISTS (SELECT 1 FROM cte);
+    """, (source, source))
+    source_id = create_cur.fetchone()[0]
+
     # Add the user to the subscriber list if they are not yet present
     create_cur.execute("""
         WITH cte AS (
@@ -53,8 +73,11 @@ def save_task(conn, user_name, symbol, target, direction_is_up, currency, before
     """, (user_name, user_name))
     subscriber_id = create_cur.fetchone()[0]
 
-    # Create a relation between subscriber and task
-    create_cur.execute("INSERT INTO tasks_subscribers(task_id, subscriber_id) VALUES (%s, %s)", (task_id, subscriber_id))
+    # Create a relation between source and task
+    create_cur.execute("INSERT INTO sources_tasks(source_id, task_id) VALUES (%s, %s) ON CONFLICT DO NOTHING;", (source_id, subscriber_id))
+
+    # Create a relation between source and subscriber
+    create_cur.execute("INSERT INTO sources_subscribers(source_id, subscriber_id) VALUES (%s, %s) ON CONFLICT DO NOTHING;", (source_id, subscriber_id))
 
     conn.commit()
     create_cur.close()
@@ -79,18 +102,38 @@ def remove_task(conn, task_id):
     delete_cur.close()
 
 
-def get_subscribers(conn, task_id):
+def get_subscribers(conn, source_id):
     get_cur = conn.cursor()
 
     get_cur.execute("""
-        WITH subscribers_of_task AS (
+        WITH subscribers_of_source AS (
             SELECT subscriber_id
-            FROM tasks_subscribers
-            WHERE task_id = %s
+            FROM sources_subscribers
+            WHERE source_id = %s
         )
         SELECT user_name
         FROM subscribers
-        WHERE id IN (SELECT subscriber_id FROM subscribers_of_task);
+        WHERE id IN (SELECT subscriber_id FROM subscribers_of_source);
+    """, (source_id,))
+    subscribers = get_cur.fetchall()
+
+    get_cur.close()
+
+    return subscribers
+
+
+def get_sources(conn, task_id):
+    get_cur = conn.cursor()
+
+    get_cur.execute("""
+        WITH sources_of_task AS (
+            SELECT source_id
+            FROM sources_tasks
+            WHERE task_id = %s
+        )
+        SELECT id, comment_id
+        FROM subscribers
+        WHERE id IN (SELECT subscriber_id FROM sources_of_task);
     """, (task_id,))
     subscribers = get_cur.fetchall()
 

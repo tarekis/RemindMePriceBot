@@ -66,7 +66,7 @@ def get_comment_body_details(comment_body):
 
 
 # TODO guess old posts wont be replyable so send a message instead then
-def reply_to_comment(reddit, comment_id, comment_reply, comment_author, comment_body_lower):
+def reply_to_comment(reddit, comment_id, comment_reply):
     try:
         comment_to_be_replied_to = reddit.comment(id=comment_id)
         comment_to_be_replied_to.reply(comment_reply)
@@ -94,7 +94,14 @@ def process_comments(conn, reddit, comments):
         # Aggregate all used fields
         comment_id = comment["id"]
         comment_author = comment["author"]
+        comment_parent_id = comment["parent_id"]
         comment_body_lower = comment["body"].lower()
+
+        comm = reddit.comment(id=comment_parent_id)
+
+        print("This should be the permalink to the parent.")
+        print(comm)
+        print(comm.permalink)        
 
         if (static.COMMAND_LOWER in comment_body_lower and comment_author != static.REDDIT_USERNAME):
             body_details = get_comment_body_details(comment_body_lower)
@@ -123,7 +130,7 @@ def process_comments(conn, reddit, comments):
                         comment_reply_builder.append(f"Can't find the symbol {symbol}, did you write that correctly?")
 
                     try:
-                        database.save_task(conn, comment_author, symbol, target, direction_is_up, currency, before_condition)
+                        database.save_task(conn, comment_author, comment_id, symbol, target, direction_is_up, currency, before_condition)
 
                         print(type(before_condition))
                         print(before_condition)

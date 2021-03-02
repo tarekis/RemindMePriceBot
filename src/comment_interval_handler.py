@@ -44,6 +44,7 @@ def run(conn, reddit, created_utc, comment_id):
                 "author",
                 "created_utc",
                 "body",
+                "parent_id"
             ]),
             "min_created_utc": created_utc
         })
