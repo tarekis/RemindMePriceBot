@@ -21,13 +21,13 @@ def finish_task(conn, reddit, task_id, trigger_price):
         symbol, target, direction_is_up, currency, before_condition = task_details
         parent_comment = reddit.comment(source_comment_id)
 
-        subject = f"{symbol} {direction_string_past_tens} {target} {currency}"
-
         before_string = "" if (before_condition == datetime.max) else f" before {before_condition}"
         direction_string_present_tense = "hits" if direction_is_up else "drops to"
         direction_string_past_tens = "hit" if direction_is_up else "dropped to"
         trigger_string = "high" if direction_is_up else "low"
         emoji = "📈" if direction_is_up else "📉"
+
+        subject = f"{symbol} {direction_string_past_tens} {target} {currency}"
 
         for subscriber_tuple in subscribers:
 
