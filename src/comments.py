@@ -93,6 +93,8 @@ def process_comments(conn, reddit, comments):
     for comment in comments:
         # Aggregate all used fields
         comment_id = comment["id"]
+        comment_author = comment["author"]
+        comment_body_lower = comment["body"].lower()
 
         parent_comment = reddit.comment(id=comment_id).parent()
 
