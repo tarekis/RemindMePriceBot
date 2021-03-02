@@ -99,13 +99,14 @@ def get_task_details(conn, task_id):
 
 
 def remove_task(conn, task_id):
-    delete_cur = conn.cursor()
-    delete_cur.execute("DELETE FROM tasks WHERE id = %s;", (task_id,))
-
     sources = get_sources(conn, task_id)
+
     sources_ids = tuple(map(map_to_zero_index, sources))
 
-    delete_cur.execute("DELETE from sources WHERE id IN %s",(sources_ids,))
+    delete_cur = conn.cursor()
+
+    delete_cur.execute("DELETE FROM tasks WHERE id = %s;", (task_id,))
+    delete_cur.execute("DELETE from sources WHERE id IN %s", (sources_ids,))
 
     conn.commit()
     delete_cur.close()
