@@ -96,10 +96,6 @@ def process_comments(conn, reddit, comments):
 
         parent_comment = reddit.comment(id=comment_id).parent()
 
-        print("This should be the permalink to the parent.")
-        print(parent_comment)
-        print(parent_comment.permalink)
-
         if (static.COMMAND_LOWER in comment_body_lower and comment_author != static.REDDIT_USERNAME):
             body_details = get_comment_body_details(comment_body_lower)
 
@@ -129,12 +125,9 @@ def process_comments(conn, reddit, comments):
                     try:
                         database.save_task(conn, comment_author, parent_comment.id, symbol, target, direction_is_up, currency, before_condition)
 
-                        print(type(before_condition))
-                        print(before_condition)
-
                         before_string = "" if before_condition is None else f" before {before_condition}"
                         direction_string = "hits" if direction_is_up else "drops to"
-                        comment_reply_builder.append(f"I will be messaging you when {symbol} {direction_string} {target} {currency}{before_string}.\n\n")
+                        comment_reply_builder.append(f"I will be messaging you when {symbol} {direction_string} {target} {currency}{before_string}, and include the [context](https://www.reddit.com{parent_comment.permalink}) in which you requested it.\n\n")
 
                         # TODO add ability to do this
                         # comment_reply_builder.append(f"[^CLICK THIS LINK ](https://np.reddit.com/message/compose/?to=RemindMePriceBot&subject=Reminder&message={additional_subscriber_message})to send a PM to also be reminded and to reduce spam..\n\n")
