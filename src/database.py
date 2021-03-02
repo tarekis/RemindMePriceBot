@@ -1,3 +1,7 @@
+def map_to_zero_index(value):
+    return value[0]
+
+
 def save_task(conn, user_name, source, symbol, target, direction_is_up, currency, before_condition):
     # Just throw the task in the DB
 
@@ -97,6 +101,11 @@ def get_task_details(conn, task_id):
 def remove_task(conn, task_id):
     delete_cur = conn.cursor()
     delete_cur.execute("DELETE FROM tasks WHERE id = %s;", (task_id,))
+
+    sources = get_sources(conn, task_id)
+    sources_ids = tuple(map(map_to_zero_index, sources))
+
+    delete_cur.execute("DELETE from sources WHERE id IN %s",(sources_ids,))
 
     conn.commit()
     delete_cur.close()
