@@ -40,7 +40,7 @@ sched = BlockingScheduler()
 
 # TODO change to 30
 @sched.scheduled_job('interval', seconds=10)
-def timed_job():
+def comment_job():
     global created_utc
     global comment_id
     global conn
@@ -53,7 +53,7 @@ def timed_job():
 
 # TODO change to 60
 @sched.scheduled_job('interval', seconds=10)
-def timed_job():
+def message_job():
     try:
         message_interval_handler.run(reddit)
     except Exception as e:
@@ -61,7 +61,7 @@ def timed_job():
 
 # TODO change to minute, so it runs hourly
 @sched.scheduled_job('cron', second=0)
-def scheduled_job():
+def finance_job():
     global conn
     try:
         cron_handler.run(conn, reddit)
