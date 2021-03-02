@@ -20,7 +20,7 @@ def run(reddit):
 
         if mark_read:
             try:
-                reddit.mark_read(message)
+                message.mark_read()
             except Exception as err:
                 logging.exception(f"Error marking message read: {message.id} : u/{message.author.name}")
 
