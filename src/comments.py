@@ -12,8 +12,8 @@ cal = parsedatetime.Calendar()
 
 direction_is_up_regex = "hits"
 direction_is_down_regex = "drops\s*(?:to)?"
-# "Explanation": https://regex101.com/r/svsM5v/1
-command_regex = f"{static.COMMAND_LOWER}\s+(?:of\s+)?([^\s]+)\s+(?:(hits|drops\s*(?:to)?)\s+)?([0-9]+(?:[,.][0-9]+)?)(?:\s+(?:(?:before)\s+([^\n]*))?)?"
+# "Explanation": https://regex101.com/r/ucZ0yR/1
+command_regex = f"{static.COMMAND_LOWER}\s+(?:of\s+)?([^\s]+)\s+(?:(hits|drops\s*(?:to)?)\s+)?([0-9]+(?:[,.][0-9]+)?)(?:\s+(?:(?:before)\s+([^\s]*)|(today))?)?"
 
 
 def get_direction_is_up(direction_raw):
@@ -48,6 +48,11 @@ def get_comment_body_details(comment_body):
         direction_raw = search_results.group(2)
         target_raw = search_results.group(3)
         before_condition_raw = search_results.group(4)
+        today_condition = search_results.group(5)
+
+        # If command was "today", interpret it as "before tomorrow"
+        if today_condition is not None:
+            before_condition_raw = 'tomorrow'
 
         (before_condition, before_condition_successfull) = get_before_condition(before_condition_raw)
 
