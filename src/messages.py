@@ -19,7 +19,7 @@ def finish_task(conn, reddit, task_id, trigger_price):
         task_details = database.get_task_details(conn, task_id)
 
         symbol, target, direction_is_up, currency, before_condition = task_details
-        parent_comment = reddit.comment(source_comment_id)
+        parent_comment = reddit.comment(source_comment_id).parent()
 
         before_string = "" if (before_condition == datetime.max) else f" before {before_condition}"
         direction_string_present_tense = "hits" if direction_is_up else "drops to"

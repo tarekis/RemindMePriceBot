@@ -130,7 +130,7 @@ def process_comments(conn, reddit, comments):
                         comment_reply_builder.append(f"Can't find the symbol {symbol}, did you write that correctly?")
 
                     try:
-                        database.save_task(conn, comment_author, parent_comment.id, symbol, target, direction_is_up, currency, before_condition)
+                        database.save_task(conn, comment_author, comment_id, symbol, target, direction_is_up, currency, before_condition)
 
                         before_string = "" if before_condition is None else f" before {before_condition}"
                         direction_string = "hits" if direction_is_up else "drops to"
