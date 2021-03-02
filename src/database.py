@@ -132,7 +132,7 @@ def get_sources(conn, task_id):
             WHERE task_id = %s
         )
         SELECT id, comment_id
-        FROM subscribers
+        FROM sources
         WHERE id IN (SELECT subscriber_id FROM sources_of_task);
     """, (task_id,))
     subscribers = get_cur.fetchall()
