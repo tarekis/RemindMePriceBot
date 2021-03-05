@@ -96,63 +96,68 @@ def reply_to_comment(reddit, comment_id, comment_reply):
 def process_comments(conn, reddit, comments):
     # Loop over all comments found in this batch
     for comment in comments:
-        # Aggregate all used fields
-        comment_id = comment["id"]
-        comment_author = comment["author"]
-        comment_body_lower = comment["body"].lower()
+        process_comment(conn, reddit, comment)
 
-        if (static.COMMAND_LOWER in comment_body_lower and comment_author != static.REDDIT_USERNAME):
-            body_details = get_comment_body_details(comment_body_lower)
 
-            comment_reply_builder = ["**Please do not use me yet, I'm not finished yet. Command may change, database cleared, etc**\n\n"]
+def process_comment(conn, reddit, comment):
+    # Aggregate all used fields
+    comment_id = comment["id"]
+    comment_author = comment["author"]
+    comment_body_lower = comment["body"].lower()
 
-            if body_details is not None:
-                # Deconstruct details
-                symbol = body_details['symbol']
-                target = body_details['target']
-                direction_is_up = body_details['direction_is_up']
-                before_condition = body_details['before_condition']
-                before_condition_successfull = body_details['before_condition_successfull']
+    if (static.COMMAND_LOWER in comment_body_lower and comment_author != static.REDDIT_USERNAME):
+        body_details = get_comment_body_details(comment_body_lower)
 
-                if before_condition_successfull:
-                    try:
-                        # Initiate ticker
-                        ticker = yf.Ticker(symbol)
+        comment_reply_builder = ["**Please do not use me yet, I'm not finished yet. Command may change, database cleared, etc**\n\n"]
 
-                        # Access ticker into, this is where an error is thrown if the ticker was not found
-                        currency = ticker.info["currency"]
+        if body_details is not None:
+            # Deconstruct details
+            symbol = body_details['symbol']
+            target = body_details['target']
+            direction_is_up = body_details['direction_is_up']
+            before_condition = body_details['before_condition']
+            before_condition_successfull = body_details['before_condition_successfull']
 
-                    except Exception as e:
-                        print('Error in symbol aquisition')
-                        print(e)
-                        comment_reply_builder.append(f"Can't find the symbol {symbol}, did you write that correctly?")
+            if before_condition_successfull:
+                try:
+                    # Initiate ticker
+                    ticker = yf.Ticker(symbol)
 
-                    try:
-                        comment = reddit.comment(id=comment_id)
-                        parent_comment = comment.parent()
-                        print(comment)
-                        print(parent_comment)
-                        database.save_task(conn, comment_author, comment_id, symbol, target, direction_is_up, currency, before_condition)
+                    # Access ticker into, this is where an error is thrown if the ticker was not found
+                    currency = ticker.info["currency"]
 
-                        before_string = "" if before_condition is None else f" before {before_condition}"
-                        direction_string = "hits" if direction_is_up else "drops to"
-                        comment_reply_builder.append(f"I will be messaging you when {symbol} {direction_string} {target} {currency}{before_string}, and include the [context](https://www.reddit.com{parent_comment.permalink}) in which you requested it.\n\n")
+                except Exception as e:
+                    print(type(e))
+                    print('Error in symbol aquisition')
+                    print(e)
+                    comment_reply_builder.append(f"Can't find the symbol {symbol}, did you write that correctly?")
 
-                        # TODO add ability to do this
-                        # comment_reply_builder.append(f"[^CLICK THIS LINK ](https://np.reddit.com/message/compose/?to=RemindMePriceBot&subject=Reminder&message={additional_subscriber_message})to send a PM to also be reminded and to reduce spam..\n\n")
+                try:
+                    comment = reddit.comment(id=comment_id)
+                    parent_comment = comment.parent()
+                    print(comment)
+                    print(parent_comment)
+                    database.save_task(conn, comment_author, comment_id, symbol, target, direction_is_up, currency, before_condition)
 
-                    except Exception as e:
-                        logging.exception("Error in comment processing")
-                        comment_reply_builder.append(f"Something happend that should have not happend, sorry that happened. Will try to fix it ASAP.")
+                    before_string = "" if before_condition is None else f" before {before_condition}"
+                    direction_string = "hits" if direction_is_up else "drops to"
+                    comment_reply_builder.append(f"I will be messaging you when {symbol} {direction_string} {target} {currency}{before_string}, and include the [context](https://www.reddit.com{parent_comment.permalink}) in which you requested it.\n\n")
 
-                else:
-                    comment_reply_builder.append("Your command specified a before time, but the time could not be interpreted.\n\n")
+                    # TODO add ability to do this
+                    # comment_reply_builder.append(f"[^CLICK THIS LINK ](https://np.reddit.com/message/compose/?to=RemindMePriceBot&subject=Reminder&message={additional_subscriber_message})to send a PM to also be reminded and to reduce spam..\n\n")
+
+                except Exception as e:
+                    logging.exception("Error in comment processing")
+                    comment_reply_builder.append(f"Something happend that should have not happend, sorry that happened. Will try to fix it ASAP.")
+
             else:
-                comment_reply_builder.append("Your command seems to be malformed, please check it's format.\n\n")
+                comment_reply_builder.append("Your command specified a before time, but the time could not be interpreted.\n\n")
+        else:
+            comment_reply_builder.append("Your command seems to be malformed, please check it's format.\n\n")
 
-            # Bottom Section
-            comment_reply_builder.append(static.BOTTOM_REPLY_SECTION)
+        # Bottom Section
+        comment_reply_builder.append(static.BOTTOM_REPLY_SECTION)
 
-            comment_reply = "".join(comment_reply_builder)
+        comment_reply = "".join(comment_reply_builder)
 
-            reply_to_comment(reddit, comment_id, comment_reply)
+        reply_to_comment(reddit, comment_id, comment_reply)
