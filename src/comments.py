@@ -72,7 +72,6 @@ def get_comment_body_details(comment_body):
 
 # TODO guess old posts wont be replyable so send a message instead then
 def reply_to_comment(reddit, comment_id, comment_reply):
-    print(f"Trying to reply to comment: {comment_id}, response: {comment_reply}")
     try:
         comment_to_be_replied_to = reddit.comment(id=comment_id)
         comment_to_be_replied_to.reply(comment_reply)
@@ -102,10 +101,7 @@ def process_comments(conn, reddit, comments):
         comment_author = comment["author"]
         comment_body_lower = comment["body"].lower()
 
-        parent_comment = reddit.comment(id=comment_id).parent()
-
         if (static.COMMAND_LOWER in comment_body_lower and comment_author != static.REDDIT_USERNAME):
-            print(f"Found comment: {comment_id}, body: {comment_body_lower}")
             body_details = get_comment_body_details(comment_body_lower)
 
             comment_reply_builder = ["**Please do not use me yet, I'm not finished yet. Command may change, database cleared, etc**\n\n"]
@@ -132,6 +128,10 @@ def process_comments(conn, reddit, comments):
                         comment_reply_builder.append(f"Can't find the symbol {symbol}, did you write that correctly?")
 
                     try:
+                        comment = reddit.comment(id=comment_id)
+                        parent_comment = comment.parent()
+                        print(comment)
+                        print(parent_comment)
                         database.save_task(conn, comment_author, comment_id, symbol, target, direction_is_up, currency, before_condition)
 
                         before_string = "" if before_condition is None else f" before {before_condition}"

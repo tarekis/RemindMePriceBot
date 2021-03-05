@@ -2,7 +2,7 @@ def map_to_zero_index(value):
     return value[0]
 
 
-def save_task(conn, user_name, source, symbol, target, direction_is_up, currency, before_condition):
+def save_task(conn, user_name, comment_id, symbol, target, direction_is_up, currency, before_condition):
     # Just throw the task in the DB
 
     values_dict = {
@@ -56,7 +56,7 @@ def save_task(conn, user_name, source, symbol, target, direction_is_up, currency
         FROM sources
         WHERE comment_id = %s
         AND NOT EXISTS (SELECT 1 FROM cte);
-    """, (source, source))
+    """, (comment_id, comment_id))
     source_id = create_cur.fetchone()[0]
 
     # Add the user to the subscriber list if they are not yet present
